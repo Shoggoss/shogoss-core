@@ -16,7 +16,7 @@ export function get_entity_from_coord(board: Readonly<Board>, coord: Coordinate)
  * @param maybe_entity 
  * @returns 
  */
-export function set_entity_in_coord_and_also_adjust_flags(board: Board, coord: Coordinate, maybe_entity: Entity | null) {
+export function put_entity_at_coord_and_also_adjust_flags(board: Board, coord: Coordinate, maybe_entity: Entity | null) {
     const [column, row] = coord;
     const row_index = "一二三四五六七八九".indexOf(row);
     const column_index = "９８７６５４３２１".indexOf(column);

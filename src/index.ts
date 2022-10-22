@@ -1,4 +1,4 @@
-import { get_entity_from_coord, set_entity_in_coord_and_also_adjust_flags } from "./board";
+import { get_entity_from_coord, put_entity_at_coord_and_also_adjust_flags } from "./board";
 import { disambiguate_piece_phase_and_apply } from "./piece_phase";
 import { Coordinate, displayCoord, GameEnd, GameState, Move, PiecePhasePlayed, ResolvedGameState, Side, StonePhasePlayed } from "./type"
 
@@ -88,7 +88,7 @@ function place_stone(old: PiecePhasePlayed, side: Side, stone_to: Coordinate): S
     if (get_entity_from_coord(old.board, stone_to)) { // if the square is already occupied
         throw new Error(`${displayCoord(stone_to)}のマスは既に埋まっています / the square ${displayCoord(stone_to)} is already occupied`);
     }
-    set_entity_in_coord_and_also_adjust_flags(old.board, stone_to, { type: "碁", side });
+    put_entity_at_coord_and_also_adjust_flags(old.board, stone_to, { type: "碁", side });
 
     return {
         phase: "stone_phase_played",
