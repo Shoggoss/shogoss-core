@@ -57,7 +57,7 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
             }
             const rightmost = RightmostWhenSeenFrom(o.side, pruned);
             if (rightmost.length === 1) {
-                return move_piece(old, { from: rightmost[0]!, to: o.to, side: o.side });
+                return move_piece(old, { from: rightmost[0]!, to: o.to, side: o.side, promote: o.promotes ?? null });
             } else {
                 throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}が盤上に複数あります`);
             }
@@ -68,7 +68,7 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
             }
             const leftmost = LeftmostWhenSeenFrom(o.side, pruned);
             if (leftmost.length === 1) {
-                return move_piece(old, { from: leftmost[0]!, to: o.to, side: o.side });
+                return move_piece(old, { from: leftmost[0]!, to: o.to, side: o.side, promote: o.promotes ?? null });
             } else {
                 throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}が盤上に複数あります`);
             }
@@ -116,14 +116,14 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
                     throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}は盤上にありません`);
                 } else if (pruned_allowing_doubled_pawns.length === 1) {
                     const from = pruned_allowing_doubled_pawns[0]!;
-                    return move_piece(old, { from, to: o.to, side: o.side });
+                    return move_piece(old, { from, to: o.to, side: o.side, promote: o.promotes ?? null });
                 } else {
                     throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}が盤上に複数あり、しかもどれを指しても二ポです`);
                 }
             }
         } else if (pruned.length === 1) {
             const from = pruned[0]!;
-            return move_piece(old, { from, to: o.to, side: o.side });
+            return move_piece(old, { from, to: o.to, side: o.side, promote: o.promotes ?? null });
         } else {
             throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}が盤上に複数あり、どれを採用するべきか分かりません`);
         }
@@ -133,7 +133,7 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
             throw new Error(`${o.side}が${displayCoord(from)}から${displayCoord(o.to)}へと${professionFullName(o.prof)}を動かそうとしていますが、${displayCoord(from)}には${o.side}の${professionFullName(o.prof)}はありません`);
         }
         if (is_reachable(old.board, { from, to: o.to })) {
-            return move_piece(old, { from, to: o.to, side: o.side });
+            return move_piece(old, { from, to: o.to, side: o.side, promote: o.promotes ?? null });
         } else {
             throw new Error(`${o.side}が${displayCoord(from)}から${displayCoord(o.to)}へと${professionFullName(o.prof)}を動かそうとしていますが、${professionFullName(o.prof)}は${displayCoord(from)}から${displayCoord(o.to)}へ動ける駒ではありません`);
         }
@@ -182,9 +182,9 @@ function kumaling(old: ResolvedGameState, o: { from: Coordinate, to: Coordinate,
     }
 }
 
-/** `o.side` が駒を `o.from` から `o.to` に動かす。キャスリング・くまりんぐは扱わない。 
+/** `o.side` が駒を `o.from` から `o.to` に動かす。その駒が合法的に動ける位置であるかは問わない。キャスリング・くまりんぐは扱わない。 
  */
-function move_piece(old: ResolvedGameState, o: { from: Coordinate, to: Coordinate, side: Side }): PiecePhasePlayed {
+function move_piece(old: ResolvedGameState, o: { from: Coordinate, to: Coordinate, side: Side, promote: boolean | null }): PiecePhasePlayed {
     const piece_that_moves = get_entity_from_coord(old.board, o.from);
     if (!piece_that_moves) {
         throw new Error(`${o.side}が${displayCoord(o.from)}から${displayCoord(o.to)}への移動を試みていますが、${displayCoord(o.from)}には駒がありません`);
@@ -193,6 +193,21 @@ function move_piece(old: ResolvedGameState, o: { from: Coordinate, to: Coordinat
     } else if (piece_that_moves.side !== o.side) {
         throw new Error(`${o.side}が${displayCoord(o.from)}から${displayCoord(o.to)}への移動を試みていますが、${displayCoord(o.from)}にあるのは${invertSide(o.side)}の駒です`);
     }
+
+    if (o.promote) {
+        if (piece_that_moves.prof === "桂") {
+            piece_that_moves.prof = "成桂";
+        } else if (piece_that_moves.prof === "銀") {
+            piece_that_moves.prof = "成銀";
+        } else if (piece_that_moves.prof === "香") {
+            piece_that_moves.prof = "成香";
+        } else if (piece_that_moves.prof === "キ") {
+            piece_that_moves.prof = "超";
+        } else if (piece_that_moves.prof === "ポ") {
+            piece_that_moves.prof = "と";
+        }
+    }
+
     const occupier = get_entity_from_coord(old.board, o.to);
     if (!occupier) {
         put_entity_at_coord_and_also_adjust_flags(old.board, o.to, piece_that_moves);
