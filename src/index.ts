@@ -1,4 +1,5 @@
-import { Board, Coordinate, Entity, GameEnd, GameState, isShogiProfession, Move, PiecePhaseMove, PiecePhasePlayed, Profession, professionFullName, ResolvedGameState, ShogiColumnName, ShogiRowName, Side, StonePhasePlayed } from "./type"
+import { get_entity_from_coord, lookup_coord_from_side_and_prof, set_entity_in_coord } from "./board";
+import { Coordinate, displayCoord, GameEnd, GameState, isShogiProfession, Move, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, Side, StonePhasePlayed } from "./type"
 
 const get_initial_state: (who_goes_first: Side) => GameState = (who_goes_first: Side) => {
     return {
@@ -80,50 +81,6 @@ const get_initial_state: (who_goes_first: Side) => GameState = (who_goes_first: 
     }
 }
 
-function get_entity_from_coord(board: Board, coord: Coordinate): Entity | null {
-    const [column, row] = coord;
-    const row_index = "一二三四五六七八九".indexOf(row);
-    const column_index = "１２３４５６７８９".indexOf(column);
-    if (row_index === -1 || column_index === -1) {
-        throw new Error(`座標「${displayCoord(coord)}」は不正です`)
-    }
-    return (board[row_index]?.[column_index]) ?? null;
-}
-
-function set_entity_in_coord(board: Board, coord: Coordinate, maybe_entity: Entity | null) {
-    const [column, row] = coord;
-    const row_index = "一二三四五六七八九".indexOf(row);
-    const column_index = "１２３４５６７８９".indexOf(column);
-    if (row_index === -1 || column_index === -1) {
-        throw new Error(`座標「${displayCoord(coord)}」は不正です`)
-    }
-    return board[row_index]![column_index] = maybe_entity;
-}
-
-function displayCoord(coord: Coordinate) {
-    return `${coord[0]}${coord[1]}`;
-}
-
-function lookup_coord_from_side_and_prof(board: Board, side: Side, prof: Profession): Coordinate[] {
-    const ans: Coordinate[] = [];
-    const rows: ShogiRowName[] = ["一", "二", "三", "四", "五", "六", "七", "八", "九"];
-    const cols: ShogiColumnName[] = ["１", "２", "３", "４", "５", "６", "７", "８", "９"];
-    for (const row of rows) {
-        for (const col of cols) {
-            const coord: Coordinate = [col, row];
-            const entity = get_entity_from_coord(board, coord);
-            if (entity === null || entity.type === "碁") {
-                continue;
-            } else if (entity.prof === prof && entity.side === side) {
-                ans.push(coord)
-            } else {
-                continue;
-            }
-        }
-    }
-    return ans;
-}
-
 /**
  * 
  * @param old 呼び出し後に破壊されている可能性があるので、後で使いたいならディープコピーしておくこと。
@@ -197,10 +154,6 @@ function place_stone(old: PiecePhasePlayed, side: Side, stone_to: Coordinate): S
     };
 }
 
-function invertSide(side: Side): Side {
-    if (side === "黒") return "白";
-    else return "黒";
-}
 
 /** 石フェーズが終了した後、勝敗判定と囲碁検査をする。 / To be called after a stone is placed: checks the victory condition and the game-of-go condition.
  * 

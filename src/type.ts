@@ -29,7 +29,11 @@ export type StonePhasePlayed = {
 }
 export type Board = Tuple9<Row>;
 export type Row = Tuple9<Entity | null>;
-export type Side = "黒" | "白"
+export type Side = "黒" | "白";
+export function invertSide(side: Side): Side {
+    if (side === "黒") return "白";
+    else return "黒";
+}
 export type Entity =
     | { type: "しょ", side: Side, prof: ShogiProfession, can_kumal: boolean } // shogi_piece
     | { type: "碁", side: Side } // go_stone
@@ -92,6 +96,9 @@ export type ShogiColumnName = "１" | "２" | "３" | "４" | "５" | "６" | "�
 export type ShogiRowName = "一" | "二" | "三" | "四" | "五" | "六" | "七" | "八" | "九";
 
 export type Coordinate = Readonly<[ShogiColumnName, ShogiRowName]>;
+export function displayCoord(coord: Coordinate) {
+    return `${coord[0]}${coord[1]}`;
+}
 
 export type PiecePhaseMove = {
     side: Side,
