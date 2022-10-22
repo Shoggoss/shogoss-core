@@ -103,7 +103,25 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
         const pruned = possible_points_of_origin.filter(from => is_reachable_and_not_doubled_pawns(old.board, { from, to: o.to }));
 
         if (pruned.length === 0) {
-            if (exists_in_hand) {
+            if (o.prof === "キ") {
+                // キャスリングおよびくまりんぐはキング王の動きとして書く。
+                // 常にキングが通常動けない範囲への移動となる。
+                const from = possible_points_of_origin[0]!;
+                const king = get_entity_from_coord(old.board, from);
+                if (king?.type === "王") {
+                    if (king.never_moved) {
+                        return kumaling(old, { from, to: o.to, side: o.side });
+                    } else if (king.has_moved_only_once) {
+                        const diff = coordDiffSeenFrom(o.side, { to: o.to, from });
+                        throw new Error("castling not implemented / キャスリングは未実装");
+                    } else {
+                        throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}は盤上にありません`);
+                    }
+                } else {
+                    throw new Error("should not reach here")
+                }
+
+            } else if (exists_in_hand) {
                 if (isShogiProfession(o.prof)) {
                     return parachute(old, { side: o.side, prof: o.prof, to: o.to });
                 } else {
