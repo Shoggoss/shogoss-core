@@ -12,7 +12,7 @@
 { "piece_phase": { "side": "黒", "to": ["１", "五"], "prof": "ポ"}, "stone_to": ["４", "四"]}, 
 { "piece_phase": { "side": "白", "to": ["４", "四"], "prof": "ポ"}, "stone_to": ["３", "五"]}, 
 { "piece_phase": { "side": "黒", "to": ["４", "四"], "prof": "ポ"}, "stone_to": ["４", "五"]}, 
-{ "piece_phase": { "side": "白", "to": ["４", "四"], "prof": "ポ", "from": ["５", "三"]}, "stone_to": ["３", "三"]}, 
+{ "piece_phase": { "side": "白", "to": ["４", "四"], "prof": "ポ", "from": "右"}, "stone_to": ["３", "三"]}, 
 { "piece_phase": { "side": "黒", "to": ["６", "七"], "prof": "ビ"}, "stone_to": ["４", "六"]}, 
 { "piece_phase": { "side": "白", "to": ["６", "五"], "prof": "ビ"}, "stone_to": ["４", "一"]}, 
 { "piece_phase": { "side": "黒", "to": ["７", "八"], "prof": "銀"}, "stone_to": ["６", "六"]}, 
