@@ -4,7 +4,7 @@ export type Phase = "piece_phase_played" | "stone_phase_played" | "resolved"
 export type GameState = ResolvedGameState | PiecePhasePlayed | StonePhasePlayed;
 export type GameEnd = {
     victor: Side | "KarateRPSBoxing",
-    reason: "two_pawns_on_the_same_column" | "king_captured_by_stone" | "king_captured_by_piece" | "king_suicide"
+    reason: "doubled_pawns" | "king_captured_by_stone" | "king_captured_by_piece" | "king_suicide"
 }
 export type ResolvedGameState = {
     phase: "resolved",
@@ -99,6 +99,51 @@ export type Coordinate = Readonly<[ShogiColumnName, ShogiRowName]>;
 export function displayCoord(coord: Coordinate) {
     return `${coord[0]}${coord[1]}`;
 }
+
+export function coordEq([col1, row1]: Coordinate, [col2, row2]: Coordinate) {
+    return col1 === col2 && row1 === row2;
+}
+
+function RightmostWhenSeenFromBlack(coords: ReadonlyArray<Coordinate>): Coordinate[] {
+    if (coords.length === 0) { throw new Error("tried to take the maximum of an empty array"); }
+
+    // Since "１" to "９" are consecutive in Unicode, we can just sort it as UTF-16 string
+    const columns = coords.map(([col, _row]) => col);
+    columns.sort();
+
+    const rightmost_column = columns[0]!;
+
+    return coords.filter(([col, _row]) => col === rightmost_column);
+}
+
+function LeftmostWhenSeenFromBlack(coords: ReadonlyArray<Coordinate>): Coordinate[] {
+    if (coords.length === 0) { throw new Error("tried to take the maximum of an empty array"); }
+
+    // Since "１" to "９" are consecutive in Unicode, we can just sort it as UTF-16 string
+    const columns = coords.map(([col, _row]) => col);
+    columns.sort();
+
+    const leftmost_column = columns[columns.length - 1]!;
+
+    return coords.filter(([col, _row]) => col === leftmost_column);
+}
+
+export function RightmostWhenSeenFrom(side: Side, coords: ReadonlyArray<Coordinate>): Coordinate[] {
+    if (side === "黒") {
+        return RightmostWhenSeenFromBlack(coords);
+    } else {
+        return LeftmostWhenSeenFromBlack(coords);
+    }
+}
+
+export function LeftmostWhenSeenFrom(side: Side, coords: ReadonlyArray<Coordinate>): Coordinate[] {
+    if (side === "黒") {
+        return LeftmostWhenSeenFromBlack(coords);
+    } else {
+        return RightmostWhenSeenFromBlack(coords);
+    }
+}
+
 
 export type PiecePhaseMove = {
     side: Side,

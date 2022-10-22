@@ -2,7 +2,7 @@ import { Board, Coordinate, displayCoord, Entity, GameEnd, GameState, isShogiPro
 export function get_entity_from_coord(board: Board, coord: Coordinate): Entity | null {
     const [column, row] = coord;
     const row_index = "一二三四五六七八九".indexOf(row);
-    const column_index = "１２３４５６７８９".indexOf(column);
+    const column_index = "９８７６５４３２１".indexOf(column);
     if (row_index === -1 || column_index === -1) {
         throw new Error(`座標「${displayCoord(coord)}」は不正です`)
     }
@@ -12,7 +12,7 @@ export function get_entity_from_coord(board: Board, coord: Coordinate): Entity |
 export function set_entity_in_coord(board: Board, coord: Coordinate, maybe_entity: Entity | null) {
     const [column, row] = coord;
     const row_index = "一二三四五六七八九".indexOf(row);
-    const column_index = "１２３４５６７８９".indexOf(column);
+    const column_index = "９８７６５４３２１".indexOf(column);
     if (row_index === -1 || column_index === -1) {
         throw new Error(`座標「${displayCoord(coord)}」は不正です`)
     }

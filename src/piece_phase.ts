@@ -1,5 +1,5 @@
 import { get_entity_from_coord, lookup_coord_from_side_and_prof, set_entity_in_coord } from "./board";
-import { Board, Coordinate, displayCoord, GameEnd, GameState, Hand, isShogiProfession, Move, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, ShogiProfession, Side, StonePhasePlayed } from "./type"
+import { Board, coordEq, Coordinate, displayCoord, GameEnd, GameState, Hand, isShogiProfession, LeftmostWhenSeenFrom, Move, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, RightmostWhenSeenFrom, ShogiColumnName, ShogiProfession, Side, StonePhasePlayed } from "./type"
 
 /** 駒を打つ。手駒から将棋駒を盤上に移動させる。
  * 
@@ -51,17 +51,102 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
                 throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}打とのことですが、${o.side}の手駒に${professionFullName(o.prof)}はありません`);
             }
         } else if (o.from === "右") {
-            throw new Error("未実装");
+            const pruned = possible_points_of_origin.filter(from => is_within_reach(old, from, o.to));
+            if (pruned.length === 0) {
+                throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}右とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}は盤上にありません`);
+            }
+            const rightmost = RightmostWhenSeenFrom(o.side, pruned);
+            if (rightmost.length === 1) {
+                return move_piece(old, rightmost[0]!, o.to);
+            } else {
+                throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}が盤上に複数あります`);
+            }
         } else if (o.from === "左") {
-            throw new Error("未実装");
+            const pruned = possible_points_of_origin.filter(from => is_within_reach(old, from, o.to));
+            if (pruned.length === 0) {
+                throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}左とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}は盤上にありません`);
+            }
+            const leftmost = LeftmostWhenSeenFrom(o.side, pruned);
+            if (leftmost.length === 1) {
+                return move_piece(old, leftmost[0]!, o.to);
+            } else {
+                throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}が盤上に複数あります`);
+            }
         } else {
-            throw new Error("「打」「右」「左」「成」「不成」以外の接尾辞は未実装です");
+            throw new Error("「打」「右」「左」「成」「不成」以外の接尾辞は未実装です。７六金（７五）などと書いて下さい。");
         }
     } else if (typeof o.from === "undefined") {
-        // no info on where the piece came from
-        throw new Error("未実装");
+        // 駒がどこから来たかが分からない。
+        // このようなときには、
+        // ・打つしかないなら打つ
+        // ・そうでなくて、目的地に行ける駒が盤上に 1 種類しかないなら、それをする
+        // という解決をすることになる。
+        //
+        // しかし、このゲームにおいて、二ポは「着手できない手」ではなくて、「着手した後に、石フェイズ解消後にもそれが残ってしまっていたら、反則負け」となるものである。
+        // この前提のもとで、ポが横並びしているときに、片方のポの前にある駒を取ろうとしている状況を考えてほしい。
+        // すると、常識的にはそんなあからさまな二ポは指さないので、1マス前進して取るのが当たり前であり、
+        // それを棋譜に起こすときにわざわざ「直」を付けるなどバカバカしい。
+        // よって、出発点推論においては、最初は二ポは排除して推論することとする。
+
+        // We have no info on where the piece came from.
+        // In such cases, the rational way of inference is
+        // * Parachute a piece if you have to.
+        // * Otherwise, if there is only one piece on board that can go to the specified destination, take that move.
+        // 
+        // However, in this game, doubled pawns are not an impossible move, but rather a move that cause you to lose if it remained even after the removal-by-go.
+        // Under such an assumption, consider the situation where there are two pawns next to each other and there is an enemy piece right in front of one of it.
+        // In such a case, it is very easy to see that taking the piece diagonally results in doubled pawns.
+        // Hence, when writing that move down, you don't want to explicitly annotate such a case with 直.
+        // Therefore, when inferring the point of origin, I first ignore the doubled pawns.
+
+        const pruned = possible_points_of_origin.filter(from => is_within_reach_and_not_doubled_pawns(old, from, o.to));
+
+        if (pruned.length === 0) {
+            if (exists_in_hand) {
+                if (isShogiProfession(o.prof)) {
+                    return parachute(old, { side: o.side, prof: o.prof, to: o.to });
+                } else {
+                    // ShogiProfession 以外は手駒に入っているはずがないので、
+                    // exists_in_hand が満たされている時点で ShogiProfession であることは既に確定している
+                    throw new Error("should not reach here")
+                }
+            } else {
+                const pruned_allowing_doubled_pawns = possible_points_of_origin.filter(from => is_within_reach(old, from, o.to));
+                if (pruned_allowing_doubled_pawns.length === 0) {
+                    throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}は盤上にありません`);
+                } else if (pruned_allowing_doubled_pawns.length === 1) {
+                    const from = pruned_allowing_doubled_pawns[0]!;
+                    return move_piece(old, from, o.to);
+                } else {
+                    throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}が盤上に複数あり、しかもどれを指しても二ポです`);
+                }
+            }
+        } else if (pruned.length === 1) {
+            const from = pruned[0]!;
+            return move_piece(old, from, o.to);
+        } else {
+            throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}が盤上に複数あり、どれを採用するべきか分かりません`);
+        }
     } else {
         const from: Coordinate = o.from;
-        throw new Error("未実装");
+        if (!possible_points_of_origin.some(c => coordEq(c, from))) {
+            throw new Error(`${o.side}が${displayCoord(from)}から${displayCoord(o.to)}へと${professionFullName(o.prof)}を動かそうとしていますが、${displayCoord(from)}には${o.side}の${professionFullName(o.prof)}はありません`);
+        }
+        if (is_within_reach(old, from, o.to)) {
+            return move_piece(old, from, o.to);
+        } else {
+            throw new Error(`${o.side}が${displayCoord(from)}から${displayCoord(o.to)}へと${professionFullName(o.prof)}を動かそうとしていますが、${professionFullName(o.prof)}は${displayCoord(from)}から${displayCoord(o.to)}へ動ける駒ではありません`);
+        }
     }
 }
+
+function move_piece(old: ResolvedGameState, from: Coordinate, to: Coordinate): PiecePhasePlayed {
+    throw new Error("Function not implemented.");
+}
+function is_within_reach(old: Readonly<ResolvedGameState>, from: Coordinate, to: Coordinate): boolean {
+    throw new Error("Function not implemented.");
+}
+function is_within_reach_and_not_doubled_pawns(old: Readonly<ResolvedGameState>, from: Coordinate, to: Coordinate): boolean {
+    throw new Error("Function not implemented.");
+}
+
