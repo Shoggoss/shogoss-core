@@ -1,5 +1,5 @@
 import { get_entity_from_coord, lookup_coord_from_side_and_prof, set_entity_in_coord } from "./board";
-import { coordEq, Coordinate, displayCoord, isShogiProfession, LeftmostWhenSeenFrom, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, RightmostWhenSeenFrom, ShogiProfession, Side } from "./type"
+import { coordEq, Coordinate, displayCoord, invertSide, isShogiProfession, LeftmostWhenSeenFrom, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, RightmostWhenSeenFrom, ShogiProfession, Side } from "./type"
 
 /** 駒を打つ。手駒から将棋駒を盤上に移動させる。
  * 
@@ -140,12 +140,58 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
     }
 }
 
+/** くまりんぐ 
+ */
+function kumaling(old: ResolvedGameState, o: { from: Coordinate, to: Coordinate, side: Side }): PiecePhasePlayed {
+    const king = get_entity_from_coord(old.board, o.from);
+    if (!king) {
+        throw new Error(`キング王が${displayCoord(o.from)}から${displayCoord(o.to)}へ動くくまりんぐを${o.side}が試みていますが、${displayCoord(o.from)}には駒がありません`);
+    } else if (king.type === "碁") {
+        throw new Error(`キング王が${displayCoord(o.from)}から${displayCoord(o.to)}へ動くくまりんぐを${o.side}が試みていますが、${displayCoord(o.from)}にあるのはキング王ではなく碁石です`);
+    } else if (king.type !== "王") {
+        throw new Error(`キング王が${displayCoord(o.from)}から${displayCoord(o.to)}へ動くくまりんぐを${o.side}が試みていますが、${displayCoord(o.from)}にはキング王ではない駒があります`);
+    } else if (king.side !== o.side) {
+        throw new Error(`キング王が${displayCoord(o.from)}から${displayCoord(o.to)}へ動くくまりんぐを${o.side}が試みていますが、${displayCoord(o.from)}にあるのは${invertSide(o.side)}のキング王です`);
+    }
+
+    const lance = get_entity_from_coord(old.board, o.to);
+    if (!lance) {
+        throw new Error(`キング王が${displayCoord(o.from)}から${displayCoord(o.to)}へ動くくまりんぐを${o.side}が試みていますが、${displayCoord(o.to)}には駒がありません`);
+    } else if (lance.type === "碁") {
+        throw new Error(`キング王が${displayCoord(o.from)}から${displayCoord(o.to)}へ動くくまりんぐを${o.side}が試みていますが、${displayCoord(o.to)}にあるのは香車ではなく碁石です`)
+    } else if (lance.type !== "しょ" || lance.prof !== "香") {
+        throw new Error(`キング王が${displayCoord(o.from)}から${displayCoord(o.to)}へ動くくまりんぐを${o.side}が試みていますが、${displayCoord(o.from)}には香車ではない駒があります`);
+    }
+
+    if (king.can_kumal) {
+        if (lance.can_kumal) {
+            set_entity_in_coord(old.board, o.to, king);
+            set_entity_in_coord(old.board, o.from, lance);
+            return {
+                phase: "piece_phase_played",
+                board: old.board,
+                hand_of_black: old.hand_of_black,
+                hand_of_white: old.hand_of_white,
+                by_whom: old.who_goes_next
+            }
+        } else {
+            throw new Error(`キング王が${displayCoord(o.from)}から${displayCoord(o.to)}へ動くくまりんぐを${o.side}が試みていますが、この香車は打たれた香車なのでくまりんぐの対象外です`);
+        }
+    } else {
+        throw new Error(`キング王が${displayCoord(o.from)}から${displayCoord(o.to)}へ動くくまりんぐを${o.side}が試みていますが、このキング王は過去に動いたことがあるのでくまりんぐの対象外です`); 
+    }
+}
+
+/** `o.side` が駒を `o.from` から `o.to` に動かす。キャスリング・くまりんぐは扱わない。 
+ */
 function move_piece(old: ResolvedGameState, o: { from: Coordinate, to: Coordinate, side: Side }): PiecePhasePlayed {
     const piece_that_moves = get_entity_from_coord(old.board, o.from);
     if (!piece_that_moves) {
         throw new Error(`${o.side}が${displayCoord(o.from)}から${displayCoord(o.to)}への移動を試みていますが、${displayCoord(o.from)}には駒がありません`);
     } else if (piece_that_moves.type === "碁") {
         throw new Error(`${o.side}が${displayCoord(o.from)}から${displayCoord(o.to)}への移動を試みていますが、${displayCoord(o.from)}にあるのは碁石であり、駒ではありません`);
+    } else if (piece_that_moves.side !== o.side) {
+        throw new Error(`${o.side}が${displayCoord(o.from)}から${displayCoord(o.to)}への移動を試みていますが、${displayCoord(o.from)}にあるのは${invertSide(o.side)}の駒です`);
     }
     const occupier = get_entity_from_coord(old.board, o.to);
     if (!occupier) {
