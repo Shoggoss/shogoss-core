@@ -125,7 +125,7 @@ function place_stone(old: PiecePhasePlayed, side: Side, stone_to: Coordinate): S
  *   4-4. When a large number (>= 2 or 3, according to @re_hako_moon) is removed, then "ShoGoSs!" should be shouted
  **/
 function resolve(after_stone_phase: StonePhasePlayed): ResolvedGameState | GameEnd {
-    throw new Error("未実装");
+    throw new Error("Function not implemented.");
 }
 
 export function from_resolved_to_resolved(old: ResolvedGameState, move: Move): ResolvedGameState | GameEnd {
@@ -140,3 +140,4 @@ export function from_resolved_to_resolved(old: ResolvedGameState, move: Move): R
     };
     return resolve(after_stone_phase)
 }
+
