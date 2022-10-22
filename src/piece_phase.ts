@@ -267,7 +267,7 @@ function deltaEq(d: { v: number, h: number }, delta: { v: number, h: number }) {
 }
 
 /**
- * 盤面の状況を見て、`o.from` に駒があってその駒が `o.to` へと利いているかどうかを返す。 / Observes the board and checks whether there is a piece at `o.from` which looks at `o.to`.
+ * `o.from` に駒があってその駒が `o.to` へと利いているかどうかを返す。ポーンの斜め利きは常に reachable と見なす。 / Checks whether there is a piece at `o.from` which looks at `o.to`. The diagonal move of pawn is always considered.
  * @param board 
  * @param o 
  * @returns 
@@ -330,6 +330,21 @@ export function is_reachable(board: Readonly<Board>, o: { from: Coordinate, to: 
     } else if (p.prof === "超") {
         return true;
     } else if (p.prof === "ポ") {
+        if ([{ v: 1, h: -1 }, { v: 1, h: 0 }, { v: 1, h: 1 }].some(d => deltaEq(d, delta))) {
+            return true;
+        }
+        if (p.never_moved && delta.v === 2 && delta.h === 0) {
+            // can move two in the front, unless blocked
+            const coord_in_front = applyDeltaSeenFrom(p.side, o.from, { v: 1, h: 0 });
+            const coord_two_in_front = applyDeltaSeenFrom(p.side, o.from, { v: 2, h: 0 });
+            if (get_entity_from_coord(board, coord_in_front)
+                || get_entity_from_coord(board, coord_two_in_front)) {
+                return false;
+            }
+            return true;
+        } else {
+            return false;
+        }
         throw new Error("Function not implemented.");
     } else {
         const _: never = p.prof;
@@ -346,7 +361,7 @@ function applyDeltaSeenFrom(side: Side, from: Coordinate, delta: { v: number, h:
         const to_column_index = from_column_index + delta.h;
         const to_row_index = from_row_index + delta.v;
         const columns: ShogiColumnName[] = ["９", "８", "７", "６", "５", "４", "３", "２", "１"];
-        const rows: ShogiRowName[] = [ "一", "二", "三", "四", "五", "六", "七", "八", "九"];
+        const rows: ShogiRowName[] = ["一", "二", "三", "四", "五", "六", "七", "八", "九"];
         return [columns[to_column_index]!, rows[to_row_index]!];
     } else {
         const [from_column, from_row] = from;
@@ -355,7 +370,7 @@ function applyDeltaSeenFrom(side: Side, from: Coordinate, delta: { v: number, h:
         const to_column_index = from_column_index - delta.h;
         const to_row_index = from_row_index - delta.v;
         const columns: ShogiColumnName[] = ["９", "８", "７", "６", "５", "４", "３", "２", "１"];
-        const rows: ShogiRowName[] = [ "一", "二", "三", "四", "五", "六", "七", "八", "九"];
+        const rows: ShogiRowName[] = ["一", "二", "三", "四", "五", "六", "七", "八", "九"];
         return [columns[to_column_index]!, rows[to_row_index]!];
     }
 }
