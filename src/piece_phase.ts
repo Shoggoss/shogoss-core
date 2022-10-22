@@ -272,7 +272,7 @@ function deltaEq(d: { v: number, h: number }, delta: { v: number, h: number }) {
  * @param o 
  * @returns 
  */
-function is_reachable(board: Readonly<Board>, o: { from: Coordinate, to: Coordinate }): boolean {
+export function is_reachable(board: Readonly<Board>, o: { from: Coordinate, to: Coordinate }): boolean {
     const p = get_entity_from_coord(board, o.from);
     if (!p) {
         return false;
