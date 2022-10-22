@@ -1,5 +1,5 @@
 import { get_entity_from_coord, lookup_coord_from_side_and_prof, set_entity_in_coord_and_also_adjust_flags } from "./board";
-import { coordEq, Coordinate, displayCoord, invertSide, isShogiProfession, LeftmostWhenSeenFrom, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, RightmostWhenSeenFrom, ShogiProfession, Side } from "./type"
+import { Board, coordEq, Coordinate, displayCoord, invertSide, isShogiProfession, LeftmostWhenSeenFrom, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, RightmostWhenSeenFrom, ShogiProfession, Side } from "./type"
 
 /** 駒を打つ。手駒から将棋駒を盤上に移動させる。
  * 
@@ -51,7 +51,7 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
                 throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}打とのことですが、${o.side}の手駒に${professionFullName(o.prof)}はありません`);
             }
         } else if (o.from === "右") {
-            const pruned = possible_points_of_origin.filter(from => is_within_reach(old, from, o.to));
+            const pruned = possible_points_of_origin.filter(from => is_reachable(old.board, { from, to: o.to }));
             if (pruned.length === 0) {
                 throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}右とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}は盤上にありません`);
             }
@@ -62,7 +62,7 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
                 throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}が盤上に複数あります`);
             }
         } else if (o.from === "左") {
-            const pruned = possible_points_of_origin.filter(from => is_within_reach(old, from, o.to));
+            const pruned = possible_points_of_origin.filter(from => is_reachable(old.board, { from, to: o.to }));
             if (pruned.length === 0) {
                 throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}左とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}は盤上にありません`);
             }
@@ -99,7 +99,7 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
         // Hence, when writing that move down, you don't want to explicitly annotate such a case with 直.
         // Therefore, when inferring the point of origin, I first ignore the doubled pawns.
 
-        const pruned = possible_points_of_origin.filter(from => is_within_reach_and_not_doubled_pawns(old, from, o.to));
+        const pruned = possible_points_of_origin.filter(from => is_reachable_and_not_doubled_pawns(old.board, { from, to: o.to }));
 
         if (pruned.length === 0) {
             if (exists_in_hand) {
@@ -111,7 +111,7 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
                     throw new Error("should not reach here")
                 }
             } else {
-                const pruned_allowing_doubled_pawns = possible_points_of_origin.filter(from => is_within_reach(old, from, o.to));
+                const pruned_allowing_doubled_pawns = possible_points_of_origin.filter(from => is_reachable(old.board, { from, to: o.to }));
                 if (pruned_allowing_doubled_pawns.length === 0) {
                     throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}は盤上にありません`);
                 } else if (pruned_allowing_doubled_pawns.length === 1) {
@@ -132,7 +132,7 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
         if (!possible_points_of_origin.some(c => coordEq(c, from))) {
             throw new Error(`${o.side}が${displayCoord(from)}から${displayCoord(o.to)}へと${professionFullName(o.prof)}を動かそうとしていますが、${displayCoord(from)}には${o.side}の${professionFullName(o.prof)}はありません`);
         }
-        if (is_within_reach(old, from, o.to)) {
+        if (is_reachable(old.board, { from, to: o.to })) {
             return move_piece(old, { from, to: o.to, side: o.side });
         } else {
             throw new Error(`${o.side}が${displayCoord(from)}から${displayCoord(o.to)}へと${professionFullName(o.prof)}を動かそうとしていますが、${professionFullName(o.prof)}は${displayCoord(from)}から${displayCoord(o.to)}へ動ける駒ではありません`);
@@ -178,7 +178,7 @@ function kumaling(old: ResolvedGameState, o: { from: Coordinate, to: Coordinate,
             throw new Error(`キング王が${displayCoord(o.from)}から${displayCoord(o.to)}へ動くくまりんぐを${o.side}が試みていますが、この香車は打たれた香車なのでくまりんぐの対象外です`);
         }
     } else {
-        throw new Error(`キング王が${displayCoord(o.from)}から${displayCoord(o.to)}へ動くくまりんぐを${o.side}が試みていますが、このキング王は過去に動いたことがあるのでくまりんぐの対象外です`); 
+        throw new Error(`キング王が${displayCoord(o.from)}から${displayCoord(o.to)}へ動くくまりんぐを${o.side}が試みていますが、このキング王は過去に動いたことがあるのでくまりんぐの対象外です`);
     }
 }
 
@@ -245,10 +245,18 @@ function move_piece(old: ResolvedGameState, o: { from: Coordinate, to: Coordinat
         }
     }
 }
-function is_within_reach(old: Readonly<ResolvedGameState>, from: Coordinate, to: Coordinate): boolean {
+function is_reachable(board: Readonly<Board>, o: { from: Coordinate, to: Coordinate }): boolean {
+    const piece_that_moves = get_entity_from_coord(board, o.from);
+    if (!piece_that_moves) {
+        return false;
+    }
+    if (piece_that_moves.type === "碁") {
+        return false;
+    }
+
     throw new Error("Function not implemented.");
 }
-function is_within_reach_and_not_doubled_pawns(old: Readonly<ResolvedGameState>, from: Coordinate, to: Coordinate): boolean {
+function is_reachable_and_not_doubled_pawns(board: Readonly<Board>, o: { from: Coordinate, to: Coordinate }): boolean {
     throw new Error("Function not implemented.");
 }
 

@@ -1,5 +1,5 @@
 import { Board, Coordinate, displayCoord, Entity, Profession, ShogiColumnName, ShogiRowName, Side } from "./type"
-export function get_entity_from_coord(board: Board, coord: Coordinate): Entity | null {
+export function get_entity_from_coord(board: Readonly<Board>, coord: Coordinate): Entity | null {
     const [column, row] = coord;
     const row_index = "一二三四五六七八九".indexOf(row);
     const column_index = "９８７６５４３２１".indexOf(column);
@@ -40,7 +40,7 @@ export function set_entity_in_coord_and_also_adjust_flags(board: Board, coord: C
     return board[row_index]![column_index] = maybe_entity;
 }
 
-export function lookup_coord_from_side_and_prof(board: Board, side: Side, prof: Profession): Coordinate[] {
+export function lookup_coord_from_side_and_prof(board: Readonly<Board>, side: Side, prof: Profession): Coordinate[] {
     const ans: Coordinate[] = [];
     const rows: ShogiRowName[] = ["一", "二", "三", "四", "五", "六", "七", "八", "九"];
     const cols: ShogiColumnName[] = ["１", "２", "３", "４", "５", "６", "７", "８", "９"];
