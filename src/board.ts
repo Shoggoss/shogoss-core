@@ -34,8 +34,8 @@ export function set_entity_in_coord_and_also_adjust_flags(board: Board, coord: C
         }
     } else if (maybe_entity?.type === "しょ" && maybe_entity.prof === "香") {
         maybe_entity.can_kumal = false;
-    } else if (maybe_entity?.type === "ス" && maybe_entity.prof === "ル") {
-        maybe_entity.can_castle = false;
+    } else if (maybe_entity?.type === "ス") {
+        maybe_entity.never_moved = false;
     }
     return board[row_index]![column_index] = maybe_entity;
 }
