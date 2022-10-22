@@ -30,44 +30,77 @@ export type StonePhasePlayed = {
 export type Board = Tuple9<Row>;
 export type Row = Tuple9<Entity | null>;
 export type Side = "黒" | "白"
-type Entity =
+export type Entity =
     | { type: "しょ", side: Side, prof: ShogiProfession, can_kumal: boolean } // shogi_piece
     | { type: "碁", side: Side } // go_stone
     | { type: "ス", side: Side, prof: ChessProfession, can_castle: boolean } // chess_piece
     | { type: "王", side: Side, prof: KingProfession, can_castle: boolean, can_kumal: boolean }
-
-type ShogiProfession =
+export type Profession = KingProfession | ShogiProfession | ChessProfession;
+export type UnpromotedShogiProfession =
     | "香" // lance 
     | "桂" // shogi_knight
     | "銀" // silver
     | "金" // gold
+    ;
+export type ShogiProfession =
+    UnpromotedShogiProfession
     | "成香" // promoted_lance
     | "成桂" // promoted_shogi_knight
     | "成銀" // promoted_silver;
-type ChessProfession =
+    ;
+
+function professionFullName(a: Profession): string {
+    if (a === "と") { return "とクィーン"; }
+    else if (a === "キ") { return "キング王"; }
+    else if (a === "ク") { return "クィーン"; }
+    else if (a === "ナ") { return "ナイト"; }
+    else if (a === "ビ") { return "ビショップ"; }
+    else if (a === "ポ") { return "ポーン兵"; }
+    else if (a === "ル") { return "ルーク"; }
+    else if (a === "超") { return "スーパーキング王"; }
+    else { return a; }
+}
+
+function isShogiProfession(a: unknown): a is ShogiProfession {
+    return a === "香" ||
+        a === "桂" ||
+        a === "銀" ||
+        a === "金" ||
+        a === "成香" ||
+        a === "成桂" ||
+        a === "成銀";
+}
+
+function isUnpromotedShogiProfession(a: unknown): a is UnpromotedShogiProfession {
+    return a === "香" ||
+        a === "桂" ||
+        a === "銀" ||
+        a === "金";
+}
+export type ChessProfession =
     | "ク" // queen
     | "ル" // rook
     | "ナ" // chess_knight
     | "ビ" // bishop
     | "ポ" // pawn
     | "と" // promoted_pawn
-type KingProfession =
+export type KingProfession =
     | "キ" // king
     | "超" // promoted_king
 
-type ShogiColumnName = "１" | "２" | "３" | "４" | "５" | "６" | "７" | "８" | "９";
-type ShogiRowName = "一" | "二" | "三" | "四" | "五" | "六" | "七" | "八" | "九";
+export type ShogiColumnName = "１" | "２" | "３" | "４" | "５" | "６" | "７" | "８" | "９";
+export type ShogiRowName = "一" | "二" | "三" | "四" | "五" | "六" | "七" | "八" | "九";
 
-type Coordinate = [ShogiColumnName, ShogiRowName];
+export type Coordinate = Readonly<[ShogiColumnName, ShogiRowName]>;
 
-type PiecePhaseMove = {
+export type PiecePhaseMove = {
     side: Side,
-    from?: Coordinate,
+    from?: Coordinate | "打" | "右" | "左",
     to: Coordinate,
     prof: ShogiProfession | ChessProfession | KingProfession,
     promotes?: boolean // true → 成. false → 不成. not given → cannot promote
 }
-type Move = { piece_phase: PiecePhaseMove, stone_to?: Coordinate }
+export type Move = { piece_phase: PiecePhaseMove, stone_to?: Coordinate }
 
 const get_initial_state: (who_goes_first: Side) => GameState = (who_goes_first: Side) => {
     return {
@@ -153,6 +186,9 @@ function get_entity_from_coord(board: Board, coord: Coordinate): Entity | null {
     const [column, row] = coord;
     const row_index = "一二三四五六七八九".indexOf(row);
     const column_index = "１２３４５６７８９".indexOf(column);
+    if (row_index === -1 || column_index === -1) {
+        throw new Error(`座標「${displayCoord(coord)}」は不正です`)
+    }
     return (board[row_index]?.[column_index]) ?? null;
 }
 
@@ -160,6 +196,9 @@ function set_entity_in_coord(board: Board, coord: Coordinate, maybe_entity: Enti
     const [column, row] = coord;
     const row_index = "一二三四五六七八九".indexOf(row);
     const column_index = "１２３４５６７８９".indexOf(column);
+    if (row_index === -1 || column_index === -1) {
+        throw new Error(`座標「${displayCoord(coord)}」は不正です`)
+    }
     return board[row_index]![column_index] = maybe_entity;
 }
 
@@ -167,13 +206,87 @@ function displayCoord(coord: Coordinate) {
     return `${coord[0]}${coord[1]}`;
 }
 
-function apply_piece_phase_move(old: ResolvedGameState, piece_phase: PiecePhaseMove): PiecePhasePlayed {
-    throw new Error("未実装");
+function lookup_coord_from_side_and_prof(board: Board, side: Side, prof: Profession): Coordinate[] {
+    const ans: Coordinate[] = [];
+    const rows: ShogiRowName[] = ["一", "二", "三", "四", "五", "六", "七", "八", "九"];
+    const cols: ShogiColumnName[] = ["１", "２", "３", "４", "５", "６", "７", "８", "９"];
+    for (const row of rows) {
+        for (const col of cols) {
+            const coord: Coordinate = [col, row];
+            const entity = get_entity_from_coord(board, coord);
+            if (entity === null || entity.type === "碁") {
+                continue;
+            } else if (entity.prof === prof && entity.side === side) {
+                ans.push(coord)
+            } else {
+                continue;
+            }
+        }
+    }
+    return ans;
+}
+
+/**
+ * 
+ * @param old 呼び出し後に破壊されている可能性があるので、後で使いたいならディープコピーしておくこと。
+ * @param o 
+ */
+function apply_piece_phase_move(old: ResolvedGameState, o: Readonly<PiecePhaseMove>): PiecePhasePlayed {
+    // The thing is that we have to infer which piece has moved, since the usual notation does not signify
+    // where the piece comes from.
+    // 面倒なのは、具体的にどの駒が動いたのかを、棋譜の情報から復元してやらないといけないという点である（普通始点は書かないので）。
+
+    // first, use the `side` field and the `prof` field to list up the possible points of origin 
+    // (note that "in hand" is a possibility).
+    const possible_points_of_origin = lookup_coord_from_side_and_prof(old.board, o.side, o.prof);
+    const hand = old[o.side === "白" ? "hand_of_white" : "hand_of_black"]
+    const exists_in_hand: boolean = hand.some(prof => prof === o.prof);
+
+    if (typeof o.from === "string") {
+        if (o.from === "打") {
+            if (exists_in_hand) {
+                if (get_entity_from_coord(old.board, o.to)) {
+                    throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}打とのことですが、${displayCoord(o.to)}マスは既に埋まっています`);
+                }
+
+                if (isShogiProfession(o.prof)) {
+                    set_entity_in_coord(old.board, o.to, { type: "しょ", side: o.side, prof: o.prof, can_kumal: false });
+                    const index = hand.findIndex(prof => prof === o.prof);
+                    hand.splice(index, 1);
+                    return {
+                        phase: "piece_phase_played",
+                        hand_of_black: old.hand_of_black,
+                        hand_of_white: old.hand_of_white,
+                        by_whom: old.who_goes_next,
+                        board: old.board
+                    }
+                } else {
+                    // ShogiProfession 以外は手駒に入っているはずがないので、
+                    // exists_in_hand が満たされている時点で ShogiProfession であることは既に確定している
+                    throw new Error("should not reach here")
+                }
+            } else {
+                throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}打とのことですが、${o.side}の手駒に${professionFullName(o.prof)}はありません`);
+            }
+        } else if (o.from === "右") {
+            throw new Error("未実装");
+        } else if (o.from === "左") {
+            throw new Error("未実装");
+        } else {
+            throw new Error("「打」「右」「左」「成」「不成」以外の接尾辞は未実装です");
+        }
+    } else if (typeof o.from === "undefined") {
+        // no info on where the piece came from
+        throw new Error("未実装");
+    } else {
+        const from: Coordinate = o.from;
+        throw new Error("未実装");
+    }
 }
 
 function place_stone(old: PiecePhasePlayed, side: Side, stone_to: Coordinate): StonePhasePlayed {
     if (get_entity_from_coord(old.board, stone_to)) { // if the square is already occupied
-        throw new Error(`${displayCoord(stone_to)}マスは既に埋まっています / the square ${displayCoord(stone_to)} is already occupied`);
+        throw new Error(`${displayCoord(stone_to)}のマスは既に埋まっています / the square ${displayCoord(stone_to)} is already occupied`);
     }
     set_entity_in_coord(old.board, stone_to, { type: "碁", side });
 
