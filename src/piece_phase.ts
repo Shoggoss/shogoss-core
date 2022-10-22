@@ -1,5 +1,5 @@
 import { get_entity_from_coord, lookup_coord_from_side_and_prof, set_entity_in_coord } from "./board";
-import { Board, coordEq, Coordinate, displayCoord, GameEnd, GameState, Hand, isShogiProfession, LeftmostWhenSeenFrom, Move, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, RightmostWhenSeenFrom, ShogiColumnName, ShogiProfession, Side, StonePhasePlayed } from "./type"
+import { coordEq, Coordinate, displayCoord, isShogiProfession, LeftmostWhenSeenFrom, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, RightmostWhenSeenFrom, ShogiProfession, Side } from "./type"
 
 /** 駒を打つ。手駒から将棋駒を盤上に移動させる。
  * 

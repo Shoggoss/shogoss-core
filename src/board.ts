@@ -1,4 +1,4 @@
-import { Board, Coordinate, displayCoord, Entity, GameEnd, GameState, isShogiProfession, Move, PiecePhaseMove, PiecePhasePlayed, Profession, professionFullName, ResolvedGameState, ShogiColumnName, ShogiRowName, Side, StonePhasePlayed } from "./type"
+import { Board, Coordinate, displayCoord, Entity, Profession, ShogiColumnName, ShogiRowName, Side } from "./type"
 export function get_entity_from_coord(board: Board, coord: Coordinate): Entity | null {
     const [column, row] = coord;
     const row_index = "一二三四五六七八九".indexOf(row);
