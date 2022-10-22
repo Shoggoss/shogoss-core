@@ -345,7 +345,6 @@ export function is_reachable(board: Readonly<Board>, o: { from: Coordinate, to: 
         } else {
             return false;
         }
-        throw new Error("Function not implemented.");
     } else {
         const _: never = p.prof;
         throw new Error("Should not reach here");

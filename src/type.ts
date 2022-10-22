@@ -5,6 +5,7 @@ export type Hand = ShogiProfession[];
 export type Phase = "piece_phase_played" | "stone_phase_played" | "resolved"
 export type GameState = ResolvedGameState | PiecePhasePlayed | StonePhasePlayed;
 export type GameEnd = {
+    phase: "game_end",
     victor: Side | "KarateRPSBoxing",
     reason: "doubled_pawns" | "king_captured_by_stone" | "king_captured_by_piece" | "king_suicide"
 }

@@ -1,6 +1,6 @@
 import { get_entity_from_coord, put_entity_at_coord_and_also_adjust_flags } from "./board";
 import { disambiguate_piece_phase_and_apply } from "./piece_phase";
-import { GameEnd, GameState, Move, PiecePhasePlayed, ResolvedGameState, Side, StonePhasePlayed } from "./type"
+import { GameEnd, invertSide, Move, PiecePhasePlayed, ResolvedGameState, Side, StonePhasePlayed } from "./type"
 import { Coordinate, displayCoord } from "./coordinate";
 export const get_initial_state: (who_goes_first: Side) => ResolvedGameState = (who_goes_first: Side) => {
     return {
@@ -137,6 +137,13 @@ function place_stone(old: PiecePhasePlayed, side: Side, stone_to: Coordinate): S
  *         「石フェイズを着手した結果として自分のポーン兵が盤上から消え二ポが解決される場合も、反則をとらず進行できる。」
  **/
 function resolve(after_stone_phase: StonePhasePlayed): ResolvedGameState | GameEnd {
+    return {
+        phase: "resolved",
+        board: after_stone_phase.board,
+        hand_of_black: after_stone_phase.hand_of_black,
+        hand_of_white: after_stone_phase.hand_of_white,
+        who_goes_next: invertSide(after_stone_phase.by_whom)
+    }
     throw new Error("Function not implemented.");
 }
 
@@ -153,3 +160,18 @@ export function from_resolved_to_resolved(old: ResolvedGameState, move: Move): R
     return resolve(after_stone_phase)
 }
 
+export function main(moves: Move[]): ResolvedGameState | GameEnd {
+    if (moves.length === 0) {
+        throw new Error("棋譜が空です");
+    }
+    const who_goes_first = moves[0]!.piece_phase.side;
+    let state = get_initial_state(who_goes_first);
+    for (const move of moves) {
+        const next = from_resolved_to_resolved(state, move);
+        if (next.phase === "game_end") {
+            return next;
+        }
+        state = next;
+    }
+    return state;
+}
