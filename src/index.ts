@@ -1,5 +1,5 @@
 import { get_entity_from_coord, set_entity_in_coord } from "./board";
-import { apply_piece_phase_move } from "./piece_phase";
+import { disambiguate_piece_phase_and_apply } from "./piece_phase";
 import { Coordinate, displayCoord, GameEnd, GameState, Move, PiecePhasePlayed, ResolvedGameState, Side, StonePhasePlayed } from "./type"
 
 export const get_initial_state: (who_goes_first: Side) => GameState = (who_goes_first: Side) => {
@@ -100,7 +100,7 @@ function place_stone(old: PiecePhasePlayed, side: Side, stone_to: Coordinate): S
 }
 
 
-/** 石フェーズが終了した後、勝敗判定と囲碁検査をする。 / To be called after a stone is placed: checks the victory condition and the game-of-go condition.
+/** 石フェイズが終了した後、勝敗判定と囲碁検査をする。 / To be called after a stone is placed: checks the victory condition and the game-of-go condition.
  * 
  * 1. キング王が盤面から除かれているかを判定。除かれていたら、それは「駒による勝利」
  * 2. 囲碁の判定をする。以下 2-1. と 2-2. の順番を逆にするとコンビネーションアタックが失敗する
@@ -129,7 +129,7 @@ function resolve(after_stone_phase: StonePhasePlayed): ResolvedGameState | GameE
 }
 
 export function from_resolved_to_resolved(old: ResolvedGameState, move: Move): ResolvedGameState | GameEnd {
-    const after_piece_phase = apply_piece_phase_move(old, move.piece_phase);
+    const after_piece_phase = disambiguate_piece_phase_and_apply(old, move.piece_phase);
 
     const after_stone_phase: StonePhasePlayed = move.stone_to ? place_stone(after_piece_phase, move.piece_phase.side, move.stone_to) : {
         phase: "stone_phase_played",
