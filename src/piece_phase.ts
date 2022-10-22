@@ -387,6 +387,24 @@ function long_range(directions: { v: number, h: number }[], board: Readonly<Boar
 }
 
 function is_reachable_and_not_doubled_pawns(board: Readonly<Board>, o: { from: Coordinate, to: Coordinate }): boolean {
-    throw new Error("Function not implemented.");
+    if (!is_reachable(board, o)) {
+        return false;
+    }
+
+    const piece = get_entity_from_coord(board, o.from);
+    if (piece?.type === "ス" && piece.prof === "ポ") {
+        if (o.from[0] === o.to[0]) { // no risk of doubled pawns when the pawn moves straight
+            return true;
+        } else {
+            const pawn_coords = lookup_coord_from_side_and_prof(board, piece.side, "ポ");
+            const problematic_pawns = pawn_coords.filter(([col, _row]) => col === o.to[0]);
+
+            // if there are no problematic pawns, return true
+            // if there are, we want to avoid such a move in this function, so false
+            return problematic_pawns.length === 0;
+        }
+    } else {
+        return true;
+    }
 }
 

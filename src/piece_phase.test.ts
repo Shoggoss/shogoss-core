@@ -459,7 +459,7 @@ test('５二金左', () => {
 	})
 });
 
-/*
+
 test('disambiguate', () => {
 	const knight_move: PiecePhasePlayed = disambiguate_piece_phase_and_apply(get_initial_state("黒"), { side: "黒", to: ["１", "六"], prof: "ナ" });
 	expect(knight_move).toEqual({
@@ -500,7 +500,7 @@ test('disambiguate', () => {
 			],
 			[null, null, null, null, null, null, null, null, null,],
 			[null, null, null, null, null, null, null, null, null,],
-			[null, null, null, null, null, null, null, null, { type: "ス", side: "黒", prof: "ナ", never_moved: true },],
+			[null, null, null, null, null, null, null, null, { type: "ス", side: "黒", prof: "ナ", never_moved: false },],
 			[
 				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
 				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
@@ -539,5 +539,4 @@ test('disambiguate', () => {
 		hand_of_white: [],
 		by_whom: "黒"
 	})
-})
-*/
+});
