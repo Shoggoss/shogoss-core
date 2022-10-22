@@ -1,6 +1,6 @@
 import { get_entity_from_coord, lookup_coord_from_side_and_prof, put_entity_at_coord_and_also_adjust_flags } from "./board";
-import { Board, invertSide, isShogiProfession, LeftmostWhenSeenFrom, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, RightmostWhenSeenFrom, ShogiProfession, Side } from "./type"
-import { coordEq, Coordinate, displayCoord } from "./coordinate"
+import { Board, coordDiffSeenFrom, invertSide, isShogiProfession, LeftmostWhenSeenFrom, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, RightmostWhenSeenFrom, ShogiProfession, Side } from "./type"
+import { coordEq, Coordinate, displayCoord, ShogiColumnName, ShogiRowName } from "./coordinate"
 
 /** 駒を打つ。手駒から将棋駒を盤上に移動させる。
  * 
@@ -262,6 +262,10 @@ function move_piece(old: ResolvedGameState, o: { from: Coordinate, to: Coordinat
     }
 }
 
+function deltaEq(d: { v: number, h: number }, delta: { v: number, h: number }) {
+    return d.v === delta.v && d.h === delta.h;
+}
+
 /**
  * 盤面の状況を見て、`o.from` に駒があってその駒が `o.to` へと利いているかどうかを返す。 / Observes the board and checks whether there is a piece at `o.from` which looks at `o.to`.
  * @param board 
@@ -269,16 +273,119 @@ function move_piece(old: ResolvedGameState, o: { from: Coordinate, to: Coordinat
  * @returns 
  */
 function is_reachable(board: Readonly<Board>, o: { from: Coordinate, to: Coordinate }): boolean {
-    const piece_that_moves = get_entity_from_coord(board, o.from);
-    if (!piece_that_moves) {
+    const p = get_entity_from_coord(board, o.from);
+    if (!p) {
         return false;
     }
-    if (piece_that_moves.type === "碁") {
+    if (p.type === "碁") {
         return false;
     }
 
-    throw new Error("Function not implemented.");
+    const delta = coordDiffSeenFrom(p.side, o);
+    if (p.prof === "成桂" || p.prof === "成銀" || p.prof === "成香" || p.prof === "金") {
+        return [
+            { v: 1, h: -1 }, { v: 1, h: 0 }, { v: 1, h: 1 },
+            { v: 0, h: -1 }, /************/  { v: 0, h: 1 },
+            /**************/ { v: -1, h: 0 } /**************/
+        ].some(d => deltaEq(d, delta));
+    } else if (p.prof === "銀") {
+        return [
+            { v: 1, h: -1 }, { v: 1, h: 0 }, { v: 1, h: 1 },
+            /**********************************************/
+            { v: -1, h: -1 }, /************/ { v: 1, h: 1 },
+        ].some(d => deltaEq(d, delta));
+    } else if (p.prof === "桂") {
+        return [
+            { v: 2, h: -1 }, { v: 2, h: 1 }
+        ].some(d => deltaEq(d, delta));
+    } else if (p.prof === "ナ") {
+        return [
+            { v: 2, h: -1 }, { v: 2, h: 1 },
+            { v: -2, h: -1 }, { v: -2, h: 1 },
+            { v: -1, h: 2 }, { v: 1, h: 2 },
+            { v: -1, h: -2 }, { v: 1, h: -2 }
+        ].some(d => deltaEq(d, delta));
+    } else if (p.prof === "キ") {
+        return [
+            { v: 1, h: -1 }, { v: 1, h: 0 }, { v: 1, h: 1 },
+            { v: 0, h: -1 }, /*************/  { v: 0, h: 1 },
+            { v: -1, h: -1 }, { v: -1, h: 0 }, { v: -1, h: 1 },
+        ].some(d => deltaEq(d, delta));
+    } else if (p.prof === "と" || p.prof === "ク") {
+        return long_range([
+            { v: 1, h: -1 }, { v: 1, h: 0 }, { v: 1, h: 1 },
+            { v: 0, h: -1 }, /*************/  { v: 0, h: 1 },
+            { v: -1, h: -1 }, { v: -1, h: 0 }, { v: -1, h: 1 },
+        ], board, o, p.side);
+    } else if (p.prof === "ビ") {
+        return long_range([
+            { v: 1, h: -1 }, { v: 1, h: 1 }, { v: -1, h: -1 }, { v: -1, h: 1 },
+        ], board, o, p.side);
+    } else if (p.prof === "ル") {
+        return long_range([
+            { v: 1, h: 0 }, { v: 0, h: -1 }, { v: 0, h: 1 }, { v: -1, h: 0 },
+        ], board, o, p.side);
+    } else if (p.prof === "香") {
+        return long_range([{ v: 1, h: 0 }], board, o, p.side);
+    } else if (p.prof === "超") {
+        return true;
+    } else if (p.prof === "ポ") {
+        throw new Error("Function not implemented.");
+    } else {
+        const _: never = p.prof;
+        throw new Error("Should not reach here");
+    }
 }
+
+// since this function is only used to interpolate between two valid points, there is no need to perform and out-of-bounds check.
+function applyDeltaSeenFrom(side: Side, from: Coordinate, delta: { v: number, h: number }): Coordinate {
+    if (side === "白") {
+        const [from_column, from_row] = from;
+        const from_row_index = "一二三四五六七八九".indexOf(from_row);
+        const from_column_index = "９８７６５４３２１".indexOf(from_column);
+        const to_column_index = from_column_index + delta.h;
+        const to_row_index = from_row_index + delta.v;
+        const columns: ShogiColumnName[] = ["９", "８", "７", "６", "５", "４", "３", "２", "１"];
+        const rows: ShogiRowName[] = [ "一", "二", "三", "四", "五", "六", "七", "八", "九"];
+        return [columns[to_column_index]!, rows[to_row_index]!];
+    } else {
+        const [from_column, from_row] = from;
+        const from_row_index = "一二三四五六七八九".indexOf(from_row);
+        const from_column_index = "９８７６５４３２１".indexOf(from_column);
+        const to_column_index = from_column_index - delta.h;
+        const to_row_index = from_row_index - delta.v;
+        const columns: ShogiColumnName[] = ["９", "８", "７", "６", "５", "４", "３", "２", "１"];
+        const rows: ShogiRowName[] = [ "一", "二", "三", "四", "五", "六", "七", "八", "九"];
+        return [columns[to_column_index]!, rows[to_row_index]!];
+    }
+}
+
+function long_range(directions: { v: number, h: number }[], board: Readonly<Board>, o: { from: Coordinate, to: Coordinate }, side: Side): boolean {
+    const delta = coordDiffSeenFrom(side, o);
+
+    const matching_directions = directions.filter(direction =>
+        delta.v * direction.v + delta.h * direction.h > 0 /* inner product is positive */
+        && delta.v * direction.h - direction.v * delta.h === 0 /* cross product is zero */
+    );
+
+    if (matching_directions.length === 0) {
+        return false;
+    }
+
+    const direction = matching_directions[0]!;
+    for (let i = { v: direction.v, h: direction.h };
+        !deltaEq(i, delta);
+        i.v += direction.v, i.h += direction.h) {
+        const coord = applyDeltaSeenFrom(side, o.from, i);
+        if (get_entity_from_coord(board, coord)) {
+            // blocked by something; cannot see
+            return false;
+        }
+    }
+
+    return true;
+}
+
 function is_reachable_and_not_doubled_pawns(board: Readonly<Board>, o: { from: Coordinate, to: Coordinate }): boolean {
     throw new Error("Function not implemented.");
 }

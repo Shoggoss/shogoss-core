@@ -1,4 +1,4 @@
-import { Coordinate, LeftmostWhenSeenFromBlack, RightmostWhenSeenFromBlack } from "./coordinate";
+import { coordDiff, Coordinate, LeftmostWhenSeenFromBlack, RightmostWhenSeenFromBlack } from "./coordinate";
 
 export type Tuple9<T> = [T, T, T, T, T, T, T, T, T];
 export type Hand = ShogiProfession[];
@@ -110,7 +110,17 @@ export function LeftmostWhenSeenFrom(side: Side, coords: ReadonlyArray<Coordinat
         return RightmostWhenSeenFromBlack(coords);
     }
 }
-    
+
+/** 前進は vertical が +1
+ */
+export function coordDiffSeenFrom(side: Side, o: { from: Coordinate, to: Coordinate }) {
+    if (side === "白") {
+        return coordDiff(o);
+    } else {
+        const { h, v } = coordDiff(o);
+        return { h: -h, v: -v };
+    }
+}
 
 export type PiecePhaseMove = {
     side: Side,
