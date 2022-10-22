@@ -18,14 +18,14 @@ export type PiecePhasePlayed = {
     board: Board,
     hand_of_black: Hand,
     hand_of_white: Hand,
-    who_goes_next: Side,
+    by_whom: Side,
 }
 export type StonePhasePlayed = {
     phase: "stone_phase_played",
     board: Board,
     hand_of_black: Hand,
     hand_of_white: Hand,
-    who_goes_next: Side,
+    by_whom: Side,
 }
 export type Board = Tuple9<Row>;
 export type Row = Tuple9<Entity | null>;
@@ -149,11 +149,41 @@ const get_initial_state: (who_goes_first: Side) => GameState = (who_goes_first: 
     }
 }
 
+function get_entity_from_coord(board: Board, coord: Coordinate): Entity | null {
+    const [column, row] = coord;
+    const row_index = "一二三四五六七八九".indexOf(row);
+    const column_index = "１２３４５６７８９".indexOf(column);
+    return (board[row_index]?.[column_index]) ?? null;
+}
+
+function set_entity_in_coord(board: Board, coord: Coordinate, maybe_entity: Entity | null) {
+    const [column, row] = coord;
+    const row_index = "一二三四五六七八九".indexOf(row);
+    const column_index = "１２３４５６７８９".indexOf(column);
+    return board[row_index]![column_index] = maybe_entity;
+}
+
+function displayCoord(coord: Coordinate) {
+    return `${coord[0]}${coord[1]}`;
+}
+
 function apply_piece_phase_move(old: ResolvedGameState, piece_phase: PiecePhaseMove): PiecePhasePlayed {
     throw new Error("未実装");
 }
+
 function place_stone(old: PiecePhasePlayed, side: Side, stone_to: Coordinate): StonePhasePlayed {
-    throw new Error("未実装");
+    if (get_entity_from_coord(old.board, stone_to)) { // if the square is already occupied
+        throw new Error(`${displayCoord(stone_to)}マスは既に埋まっています / the square ${displayCoord(stone_to)} is already occupied`);
+    }
+    set_entity_in_coord(old.board, stone_to, { type: "碁", side });
+
+    return {
+        phase: "stone_phase_played",
+        board: old.board,
+        hand_of_black: old.hand_of_black,
+        hand_of_white: old.hand_of_white,
+        by_whom: old.by_whom,
+    };
 }
 
 function invertSide(side: Side): Side {
@@ -189,7 +219,7 @@ function resolve(after_stone_phase: StonePhasePlayed): ResolvedGameState | GameE
     throw new Error("未実装");
 }
 
-function from_resolved_to_resolved(old: ResolvedGameState, move: Move): ResolvedGameState | GameEnd {
+export function from_resolved_to_resolved(old: ResolvedGameState, move: Move): ResolvedGameState | GameEnd {
     const after_piece_phase = apply_piece_phase_move(old, move.piece_phase);
 
     const after_stone_phase: StonePhasePlayed = move.stone_to ? place_stone(after_piece_phase, move.piece_phase.side, move.stone_to) : {
@@ -197,7 +227,7 @@ function from_resolved_to_resolved(old: ResolvedGameState, move: Move): Resolved
         board: after_piece_phase.board,
         hand_of_black: after_piece_phase.hand_of_black,
         hand_of_white: after_piece_phase.hand_of_white,
-        who_goes_next: invertSide(after_piece_phase.who_goes_next),
+        by_whom: after_piece_phase.by_whom,
     };
     return resolve(after_stone_phase)
 }
