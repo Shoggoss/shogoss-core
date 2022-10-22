@@ -57,7 +57,7 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
             }
             const rightmost = RightmostWhenSeenFrom(o.side, pruned);
             if (rightmost.length === 1) {
-                return move_piece(old, rightmost[0]!, o.to);
+                return move_piece(old, { from: rightmost[0]!, to: o.to, side: o.side });
             } else {
                 throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}が盤上に複数あります`);
             }
@@ -68,7 +68,7 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
             }
             const leftmost = LeftmostWhenSeenFrom(o.side, pruned);
             if (leftmost.length === 1) {
-                return move_piece(old, leftmost[0]!, o.to);
+                return move_piece(old, { from: leftmost[0]!, to: o.to, side: o.side });
             } else {
                 throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}が盤上に複数あります`);
             }
@@ -116,14 +116,14 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
                     throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}は盤上にありません`);
                 } else if (pruned_allowing_doubled_pawns.length === 1) {
                     const from = pruned_allowing_doubled_pawns[0]!;
-                    return move_piece(old, from, o.to);
+                    return move_piece(old, { from, to: o.to, side: o.side });
                 } else {
                     throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}が盤上に複数あり、しかもどれを指しても二ポです`);
                 }
             }
         } else if (pruned.length === 1) {
             const from = pruned[0]!;
-            return move_piece(old, from, o.to);
+            return move_piece(old, { from, to: o.to, side: o.side });
         } else {
             throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}が盤上に複数あり、どれを採用するべきか分かりません`);
         }
@@ -133,15 +133,71 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
             throw new Error(`${o.side}が${displayCoord(from)}から${displayCoord(o.to)}へと${professionFullName(o.prof)}を動かそうとしていますが、${displayCoord(from)}には${o.side}の${professionFullName(o.prof)}はありません`);
         }
         if (is_within_reach(old, from, o.to)) {
-            return move_piece(old, from, o.to);
+            return move_piece(old, { from, to: o.to, side: o.side });
         } else {
             throw new Error(`${o.side}が${displayCoord(from)}から${displayCoord(o.to)}へと${professionFullName(o.prof)}を動かそうとしていますが、${professionFullName(o.prof)}は${displayCoord(from)}から${displayCoord(o.to)}へ動ける駒ではありません`);
         }
     }
 }
 
-function move_piece(old: ResolvedGameState, from: Coordinate, to: Coordinate): PiecePhasePlayed {
-    throw new Error("Function not implemented.");
+function move_piece(old: ResolvedGameState, o: { from: Coordinate, to: Coordinate, side: Side }): PiecePhasePlayed {
+    const piece_that_moves = get_entity_from_coord(old.board, o.from);
+    if (!piece_that_moves) {
+        throw new Error(`${o.side}が${displayCoord(o.from)}から${displayCoord(o.to)}への移動を試みていますが、${displayCoord(o.from)}には駒がありません`);
+    } else if (piece_that_moves.type === "碁") {
+        throw new Error(`${o.side}が${displayCoord(o.from)}から${displayCoord(o.to)}への移動を試みていますが、${displayCoord(o.from)}にあるのは碁石であり、駒ではありません`);
+    }
+    const occupier = get_entity_from_coord(old.board, o.to);
+    if (!occupier) {
+        set_entity_in_coord(old.board, o.to, piece_that_moves);
+        set_entity_in_coord(old.board, o.from, null);
+        return {
+            phase: "piece_phase_played",
+            board: old.board,
+            hand_of_black: old.hand_of_black,
+            hand_of_white: old.hand_of_white,
+            by_whom: old.who_goes_next
+        }
+    } else if (occupier.type === "碁") {
+        if (occupier.side === o.side) {
+            throw new Error(`${o.side}が${displayCoord(o.from)}から${displayCoord(o.to)}への移動を試みていますが、${displayCoord(o.to)}に自分の碁石があるので、移動できません`);
+        } else {
+            set_entity_in_coord(old.board, o.to, piece_that_moves);
+            set_entity_in_coord(old.board, o.from, null);
+            return {
+                phase: "piece_phase_played",
+                board: old.board,
+                hand_of_black: old.hand_of_black,
+                hand_of_white: old.hand_of_white,
+                by_whom: old.who_goes_next
+            }
+        }
+    } else {
+        if (occupier.side === o.side) {
+            throw new Error(`${o.side}が${displayCoord(o.from)}から${displayCoord(o.to)}への移動を試みていますが、${displayCoord(o.to)}に自分の駒があるので、移動できません`);
+        } else if (occupier.type === "しょ") {
+            (o.side === "白" ? old.hand_of_white : old.hand_of_black).push(occupier.prof);
+            set_entity_in_coord(old.board, o.to, piece_that_moves);
+            set_entity_in_coord(old.board, o.from, null);
+            return {
+                phase: "piece_phase_played",
+                board: old.board,
+                hand_of_black: old.hand_of_black,
+                hand_of_white: old.hand_of_white,
+                by_whom: old.who_goes_next
+            };
+        } else {
+            set_entity_in_coord(old.board, o.to, piece_that_moves);
+            set_entity_in_coord(old.board, o.from, null);
+            return {
+                phase: "piece_phase_played",
+                board: old.board,
+                hand_of_black: old.hand_of_black,
+                hand_of_white: old.hand_of_white,
+                by_whom: old.who_goes_next
+            };
+        }
+    }
 }
 function is_within_reach(old: Readonly<ResolvedGameState>, from: Coordinate, to: Coordinate): boolean {
     throw new Error("Function not implemented.");
