@@ -1,5 +1,6 @@
 import { get_entity_from_coord, lookup_coord_from_side_and_prof, put_entity_at_coord_and_also_adjust_flags } from "./board";
-import { Board, coordEq, Coordinate, displayCoord, invertSide, isShogiProfession, LeftmostWhenSeenFrom, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, RightmostWhenSeenFrom, ShogiProfession, Side } from "./type"
+import { Board, invertSide, isShogiProfession, LeftmostWhenSeenFrom, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, RightmostWhenSeenFrom, ShogiProfession, Side } from "./type"
+import { coordEq, Coordinate, displayCoord } from "./coordinate"
 
 /** 駒を打つ。手駒から将棋駒を盤上に移動させる。
  * 
@@ -262,7 +263,7 @@ function move_piece(old: ResolvedGameState, o: { from: Coordinate, to: Coordinat
 }
 
 /**
- * 盤面の状況を見て、`o.from` に駒があってその駒が `o.to` へと移動できるかどうかを返す。 / Observes the board and checks whether there is a piece at `o.from` which can move to `o.to`.
+ * 盤面の状況を見て、`o.from` に駒があってその駒が `o.to` へと利いているかどうかを返す。 / Observes the board and checks whether there is a piece at `o.from` which looks at `o.to`.
  * @param board 
  * @param o 
  * @returns 

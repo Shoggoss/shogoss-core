@@ -1,7 +1,7 @@
 import { get_entity_from_coord, put_entity_at_coord_and_also_adjust_flags } from "./board";
 import { disambiguate_piece_phase_and_apply } from "./piece_phase";
-import { Coordinate, displayCoord, GameEnd, GameState, Move, PiecePhasePlayed, ResolvedGameState, Side, StonePhasePlayed } from "./type"
-
+import { GameEnd, GameState, Move, PiecePhasePlayed, ResolvedGameState, Side, StonePhasePlayed } from "./type"
+import { Coordinate, displayCoord } from "./coordinate";
 export const get_initial_state: (who_goes_first: Side) => GameState = (who_goes_first: Side) => {
     return {
         phase: "resolved",
