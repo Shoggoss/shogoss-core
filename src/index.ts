@@ -1,4 +1,4 @@
-import { get_entity_from_coord, set_entity_in_coord } from "./board";
+import { get_entity_from_coord, set_entity_in_coord_and_also_adjust_flags } from "./board";
 import { disambiguate_piece_phase_and_apply } from "./piece_phase";
 import { Coordinate, displayCoord, GameEnd, GameState, Move, PiecePhasePlayed, ResolvedGameState, Side, StonePhasePlayed } from "./type"
 
@@ -14,7 +14,7 @@ export const get_initial_state: (who_goes_first: Side) => GameState = (who_goes_
                 { type: "しょ", side: "白", prof: "桂", can_kumal: false },
                 { type: "しょ", side: "白", prof: "銀", can_kumal: false },
                 { type: "しょ", side: "白", prof: "金", can_kumal: false },
-                { type: "王", side: "白", prof: "キ", can_kumal: true, can_castle: false },
+                { type: "王", side: "白", prof: "キ", never_moved: true, has_moved_only_once: false },
                 { type: "しょ", side: "白", prof: "金", can_kumal: false },
                 { type: "しょ", side: "白", prof: "銀", can_kumal: false },
                 { type: "しょ", side: "白", prof: "桂", can_kumal: false },
@@ -72,7 +72,7 @@ export const get_initial_state: (who_goes_first: Side) => GameState = (who_goes_
                 { type: "しょ", side: "黒", prof: "桂", can_kumal: false },
                 { type: "しょ", side: "黒", prof: "銀", can_kumal: false },
                 { type: "しょ", side: "黒", prof: "金", can_kumal: false },
-                { type: "王", side: "黒", prof: "キ", can_kumal: true, can_castle: false },
+                { type: "王", side: "黒", prof: "キ", never_moved: true, has_moved_only_once: false },
                 { type: "しょ", side: "黒", prof: "金", can_kumal: false },
                 { type: "しょ", side: "黒", prof: "銀", can_kumal: false },
                 { type: "しょ", side: "黒", prof: "桂", can_kumal: false },
@@ -88,7 +88,7 @@ function place_stone(old: PiecePhasePlayed, side: Side, stone_to: Coordinate): S
     if (get_entity_from_coord(old.board, stone_to)) { // if the square is already occupied
         throw new Error(`${displayCoord(stone_to)}のマスは既に埋まっています / the square ${displayCoord(stone_to)} is already occupied`);
     }
-    set_entity_in_coord(old.board, stone_to, { type: "碁", side });
+    set_entity_in_coord_and_also_adjust_flags(old.board, stone_to, { type: "碁", side });
 
     return {
         phase: "stone_phase_played",

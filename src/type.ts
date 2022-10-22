@@ -38,7 +38,7 @@ export type Entity =
     | { type: "しょ", side: Side, prof: ShogiProfession, can_kumal: boolean } // shogi_piece
     | { type: "碁", side: Side } // go_stone
     | { type: "ス", side: Side, prof: ChessProfession, can_castle: boolean } // chess_piece
-    | { type: "王", side: Side, prof: KingProfession, can_castle: boolean, can_kumal: boolean }
+    | { type: "王", side: Side, prof: KingProfession, has_moved_only_once: boolean, never_moved: boolean }
 export type Profession = KingProfession | ShogiProfession | ChessProfession;
 export type UnpromotedShogiProfession =
     | "香" // lance 

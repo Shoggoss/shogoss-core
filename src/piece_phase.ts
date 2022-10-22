@@ -1,4 +1,4 @@
-import { get_entity_from_coord, lookup_coord_from_side_and_prof, set_entity_in_coord } from "./board";
+import { get_entity_from_coord, lookup_coord_from_side_and_prof, set_entity_in_coord_and_also_adjust_flags } from "./board";
 import { coordEq, Coordinate, displayCoord, invertSide, isShogiProfession, LeftmostWhenSeenFrom, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, RightmostWhenSeenFrom, ShogiProfession, Side } from "./type"
 
 /** 駒を打つ。手駒から将棋駒を盤上に移動させる。
@@ -9,7 +9,7 @@ function parachute(old: ResolvedGameState, o: { side: Side, prof: ShogiProfessio
         throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}打とのことですが、${displayCoord(o.to)}マスは既に埋まっています`);
     }
     const hand = old[o.side === "白" ? "hand_of_white" : "hand_of_black"];
-    set_entity_in_coord(old.board, o.to, { type: "しょ", side: o.side, prof: o.prof, can_kumal: false });
+    set_entity_in_coord_and_also_adjust_flags(old.board, o.to, { type: "しょ", side: o.side, prof: o.prof, can_kumal: false });
     const index = hand.findIndex(prof => prof === o.prof);
     hand.splice(index, 1);
     return {
@@ -163,10 +163,10 @@ function kumaling(old: ResolvedGameState, o: { from: Coordinate, to: Coordinate,
         throw new Error(`キング王が${displayCoord(o.from)}から${displayCoord(o.to)}へ動くくまりんぐを${o.side}が試みていますが、${displayCoord(o.from)}には香車ではない駒があります`);
     }
 
-    if (king.can_kumal) {
+    if (king.never_moved) {
         if (lance.can_kumal) {
-            set_entity_in_coord(old.board, o.to, king);
-            set_entity_in_coord(old.board, o.from, lance);
+            set_entity_in_coord_and_also_adjust_flags(old.board, o.to, king);
+            set_entity_in_coord_and_also_adjust_flags(old.board, o.from, lance);
             return {
                 phase: "piece_phase_played",
                 board: old.board,
@@ -195,8 +195,8 @@ function move_piece(old: ResolvedGameState, o: { from: Coordinate, to: Coordinat
     }
     const occupier = get_entity_from_coord(old.board, o.to);
     if (!occupier) {
-        set_entity_in_coord(old.board, o.to, piece_that_moves);
-        set_entity_in_coord(old.board, o.from, null);
+        set_entity_in_coord_and_also_adjust_flags(old.board, o.to, piece_that_moves);
+        set_entity_in_coord_and_also_adjust_flags(old.board, o.from, null);
         return {
             phase: "piece_phase_played",
             board: old.board,
@@ -208,8 +208,8 @@ function move_piece(old: ResolvedGameState, o: { from: Coordinate, to: Coordinat
         if (occupier.side === o.side) {
             throw new Error(`${o.side}が${displayCoord(o.from)}から${displayCoord(o.to)}への移動を試みていますが、${displayCoord(o.to)}に自分の碁石があるので、移動できません`);
         } else {
-            set_entity_in_coord(old.board, o.to, piece_that_moves);
-            set_entity_in_coord(old.board, o.from, null);
+            set_entity_in_coord_and_also_adjust_flags(old.board, o.to, piece_that_moves);
+            set_entity_in_coord_and_also_adjust_flags(old.board, o.from, null);
             return {
                 phase: "piece_phase_played",
                 board: old.board,
@@ -223,8 +223,8 @@ function move_piece(old: ResolvedGameState, o: { from: Coordinate, to: Coordinat
             throw new Error(`${o.side}が${displayCoord(o.from)}から${displayCoord(o.to)}への移動を試みていますが、${displayCoord(o.to)}に自分の駒があるので、移動できません`);
         } else if (occupier.type === "しょ") {
             (o.side === "白" ? old.hand_of_white : old.hand_of_black).push(occupier.prof);
-            set_entity_in_coord(old.board, o.to, piece_that_moves);
-            set_entity_in_coord(old.board, o.from, null);
+            set_entity_in_coord_and_also_adjust_flags(old.board, o.to, piece_that_moves);
+            set_entity_in_coord_and_also_adjust_flags(old.board, o.from, null);
             return {
                 phase: "piece_phase_played",
                 board: old.board,
@@ -233,8 +233,8 @@ function move_piece(old: ResolvedGameState, o: { from: Coordinate, to: Coordinat
                 by_whom: old.who_goes_next
             };
         } else {
-            set_entity_in_coord(old.board, o.to, piece_that_moves);
-            set_entity_in_coord(old.board, o.from, null);
+            set_entity_in_coord_and_also_adjust_flags(old.board, o.to, piece_that_moves);
+            set_entity_in_coord_and_also_adjust_flags(old.board, o.from, null);
             return {
                 phase: "piece_phase_played",
                 board: old.board,
