@@ -111,7 +111,7 @@ export function LeftmostWhenSeenFrom(side: Side, coords: ReadonlyArray<Coordinat
     }
 }
 
-/** 前進は vertical が +1
+/** vertical が +1 = 前進　　horizontal が +1 = 左
  */
 export function coordDiffSeenFrom(side: Side, o: { from: Coordinate, to: Coordinate }) {
     if (side === "白") {
