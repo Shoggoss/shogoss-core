@@ -1,8 +1,8 @@
-import { get_entity_from_coord, set_entity_in_coord } from "./board";
+import { get_entity_from_coord, put_entity_at_coord_and_also_adjust_flags } from "./board";
 import { disambiguate_piece_phase_and_apply } from "./piece_phase";
-import { Coordinate, displayCoord, GameEnd, GameState, Move, PiecePhasePlayed, ResolvedGameState, Side, StonePhasePlayed } from "./type"
-
-export const get_initial_state: (who_goes_first: Side) => GameState = (who_goes_first: Side) => {
+import { GameEnd, invertSide, Move, PiecePhasePlayed, ResolvedGameState, Side, StonePhasePlayed } from "./type"
+import { Coordinate, displayCoord } from "./coordinate";
+export const get_initial_state: (who_goes_first: Side) => ResolvedGameState = (who_goes_first: Side) => {
     return {
         phase: "resolved",
         hand_of_black: [],
@@ -14,65 +14,65 @@ export const get_initial_state: (who_goes_first: Side) => GameState = (who_goes_
                 { type: "しょ", side: "白", prof: "桂", can_kumal: false },
                 { type: "しょ", side: "白", prof: "銀", can_kumal: false },
                 { type: "しょ", side: "白", prof: "金", can_kumal: false },
-                { type: "王", side: "白", prof: "キ", can_kumal: true, can_castle: false },
+                { type: "王", side: "白", prof: "キ", never_moved: true, has_moved_only_once: false },
                 { type: "しょ", side: "白", prof: "金", can_kumal: false },
                 { type: "しょ", side: "白", prof: "銀", can_kumal: false },
                 { type: "しょ", side: "白", prof: "桂", can_kumal: false },
                 { type: "しょ", side: "白", prof: "香", can_kumal: true },
             ],
             [
-                { type: "ス", side: "白", prof: "ル", can_castle: true },
-                { type: "ス", side: "白", prof: "ナ", can_castle: false },
-                { type: "ス", side: "白", prof: "ビ", can_castle: false },
+                { type: "ス", side: "白", prof: "ル", never_moved: true },
+                { type: "ス", side: "白", prof: "ナ", never_moved: true },
+                { type: "ス", side: "白", prof: "ビ", never_moved: true },
                 null,
-                { type: "ス", side: "白", prof: "ク", can_castle: false },
+                { type: "ス", side: "白", prof: "ク", never_moved: true },
                 null,
-                { type: "ス", side: "白", prof: "ビ", can_castle: false },
-                { type: "ス", side: "白", prof: "ナ", can_castle: false },
-                { type: "ス", side: "白", prof: "ル", can_castle: true },
+                { type: "ス", side: "白", prof: "ビ", never_moved: true },
+                { type: "ス", side: "白", prof: "ナ", never_moved: true },
+                { type: "ス", side: "白", prof: "ル", never_moved: true },
             ],
             [
-                { type: "ス", side: "白", prof: "ポ", can_castle: false },
-                { type: "ス", side: "白", prof: "ポ", can_castle: false },
-                { type: "ス", side: "白", prof: "ポ", can_castle: false },
-                { type: "ス", side: "白", prof: "ポ", can_castle: false },
-                { type: "ス", side: "白", prof: "ポ", can_castle: false },
-                { type: "ス", side: "白", prof: "ポ", can_castle: false },
-                { type: "ス", side: "白", prof: "ポ", can_castle: false },
-                { type: "ス", side: "白", prof: "ポ", can_castle: false },
-                { type: "ス", side: "白", prof: "ポ", can_castle: false },
+                { type: "ス", side: "白", prof: "ポ", never_moved: true },
+                { type: "ス", side: "白", prof: "ポ", never_moved: true },
+                { type: "ス", side: "白", prof: "ポ", never_moved: true },
+                { type: "ス", side: "白", prof: "ポ", never_moved: true },
+                { type: "ス", side: "白", prof: "ポ", never_moved: true },
+                { type: "ス", side: "白", prof: "ポ", never_moved: true },
+                { type: "ス", side: "白", prof: "ポ", never_moved: true },
+                { type: "ス", side: "白", prof: "ポ", never_moved: true },
+                { type: "ス", side: "白", prof: "ポ", never_moved: true },
             ],
             [null, null, null, null, null, null, null, null, null,],
             [null, null, null, null, null, null, null, null, null,],
             [null, null, null, null, null, null, null, null, null,],
             [
-                { type: "ス", side: "黒", prof: "ポ", can_castle: false },
-                { type: "ス", side: "黒", prof: "ポ", can_castle: false },
-                { type: "ス", side: "黒", prof: "ポ", can_castle: false },
-                { type: "ス", side: "黒", prof: "ポ", can_castle: false },
-                { type: "ス", side: "黒", prof: "ポ", can_castle: false },
-                { type: "ス", side: "黒", prof: "ポ", can_castle: false },
-                { type: "ス", side: "黒", prof: "ポ", can_castle: false },
-                { type: "ス", side: "黒", prof: "ポ", can_castle: false },
-                { type: "ス", side: "黒", prof: "ポ", can_castle: false },
+                { type: "ス", side: "黒", prof: "ポ", never_moved: true },
+                { type: "ス", side: "黒", prof: "ポ", never_moved: true },
+                { type: "ス", side: "黒", prof: "ポ", never_moved: true },
+                { type: "ス", side: "黒", prof: "ポ", never_moved: true },
+                { type: "ス", side: "黒", prof: "ポ", never_moved: true },
+                { type: "ス", side: "黒", prof: "ポ", never_moved: true },
+                { type: "ス", side: "黒", prof: "ポ", never_moved: true },
+                { type: "ス", side: "黒", prof: "ポ", never_moved: true },
+                { type: "ス", side: "黒", prof: "ポ", never_moved: true },
             ],
             [
-                { type: "ス", side: "黒", prof: "ル", can_castle: true },
-                { type: "ス", side: "黒", prof: "ナ", can_castle: false },
-                { type: "ス", side: "黒", prof: "ビ", can_castle: false },
+                { type: "ス", side: "黒", prof: "ル", never_moved: true },
+                { type: "ス", side: "黒", prof: "ナ", never_moved: true },
+                { type: "ス", side: "黒", prof: "ビ", never_moved: true },
                 null,
-                { type: "ス", side: "黒", prof: "ク", can_castle: false },
+                { type: "ス", side: "黒", prof: "ク", never_moved: true },
                 null,
-                { type: "ス", side: "黒", prof: "ビ", can_castle: false },
-                { type: "ス", side: "黒", prof: "ナ", can_castle: false },
-                { type: "ス", side: "黒", prof: "ル", can_castle: true },
+                { type: "ス", side: "黒", prof: "ビ", never_moved: true },
+                { type: "ス", side: "黒", prof: "ナ", never_moved: true },
+                { type: "ス", side: "黒", prof: "ル", never_moved: true },
             ],
             [
                 { type: "しょ", side: "黒", prof: "香", can_kumal: true },
                 { type: "しょ", side: "黒", prof: "桂", can_kumal: false },
                 { type: "しょ", side: "黒", prof: "銀", can_kumal: false },
                 { type: "しょ", side: "黒", prof: "金", can_kumal: false },
-                { type: "王", side: "黒", prof: "キ", can_kumal: true, can_castle: false },
+                { type: "王", side: "黒", prof: "キ", never_moved: true, has_moved_only_once: false },
                 { type: "しょ", side: "黒", prof: "金", can_kumal: false },
                 { type: "しょ", side: "黒", prof: "銀", can_kumal: false },
                 { type: "しょ", side: "黒", prof: "桂", can_kumal: false },
@@ -88,7 +88,7 @@ function place_stone(old: PiecePhasePlayed, side: Side, stone_to: Coordinate): S
     if (get_entity_from_coord(old.board, stone_to)) { // if the square is already occupied
         throw new Error(`${displayCoord(stone_to)}のマスは既に埋まっています / the square ${displayCoord(stone_to)} is already occupied`);
     }
-    set_entity_in_coord(old.board, stone_to, { type: "碁", side });
+    put_entity_at_coord_and_also_adjust_flags(old.board, stone_to, { type: "碁", side });
 
     return {
         phase: "stone_phase_played",
@@ -102,29 +102,48 @@ function place_stone(old: PiecePhasePlayed, side: Side, stone_to: Coordinate): S
 
 /** 石フェイズが終了した後、勝敗判定と囲碁検査をする。 / To be called after a stone is placed: checks the victory condition and the game-of-go condition.
  * 
- * 1. キング王が盤面から除かれているかを判定。除かれていたら、それは「駒による勝利」
- * 2. 囲碁の判定をする。以下 2-1. と 2-2. の順番を逆にするとコンビネーションアタックが失敗する
- *   2-1. 自分の駒と石によって囲まれている相手の駒と石をすべて取り除く
- *   2-2. 相手の駒と石によって囲まれている自分の駒と石をすべて取り除く
- * 3. 二ポが発生しているかを判断。発生していた場合、反則負け
- * 4. キング王が盤面から除かれているかを判定。
- *   4-1. 両者が除かれていたら、@re_hako_moon曰く引き分けとなり、カラテジャンケンボクシング
- *   4-2. 相手の王だけ除かれていたら、それは「石による勝利」
- *   4-3. 自分の王だけ除かれていたら、それは「王の自殺による敗北」
- *   4-4. 「ごっそり」（@re_hako_moon曰く、2個か3個）に該当するときには「ショゴス！」の発声
+ * 1. 自分の駒と石によって囲まれている相手の駒と石をすべて取り除く
+ * 2. 相手の駒と石によって囲まれている自分の駒と石をすべて取り除く
+ * 3. 二ポが発生しているか・キング王が盤面から除かれているかを判定。
+ *   3-1. 両キング王が除かれていたら、カラテジャンケンボクシング
+ *   3-2. 自分の王だけ除かれていたら、それは「王の自殺による敗北」
+ *   3-3. 相手の王だけ除かれている場合、
+ *       3-3-1. 二ポが発生していなければ、それは「王の排除による勝利」
+ *             3-3-1-1. 相手の王を取り除いたのがステップ 1. であり、
+ *                      しかも「ごっそり」（@re_hako_moon曰く、2個か3個）
+ *                      に該当するときには「ショゴス！」の発声
+ *       3-3-2. 二ポが発生しているなら、カラテジャンケンボクシング
+ *   3-4. どちらの王も除かれていない場合、
+ *       3-4-1. 二ポが発生していなければ、ゲーム続行
+ *       3-4-2. 二ポが発生しているなら、それは「二ポによる敗北」
+ *   
+ * 1 → 2 の順番である根拠：コンビネーションアタックの存在
+ * 2 → 3 の順番である根拠：公式ルール追記
+ * 「石フェイズを着手した結果として自分のポーン兵が盤上から消え二ポが解決される場合も、反則をとらず進行できる。」
  * 
- * 1. Checks whether a king is removed from the board. If removed, then it is a victory by a piece.
- * 2. Checks the conditions pertaining to the game of go. (Note that the order of 2-1. and 2-2. is crucial; otherwise the "combination attack" cannot happen)
- *   2-1. Remove all the opponent's pieces and stones surrounded by your pieces and stones
- *   2-2. Remove all your pieces and stones surrounded by the opponent's pieces and stones
- * 3. Checks whether two pawns occupy the same column. If so, the player loses.
- * 4. Checks whether a king is removed from the board.
- *   4-1. If both kings are removed, that is a draw (according to @re_hako_moon), and therefore a Karate Rock-Paper-Scissors Boxing
- *   4-2. If the opponent's king is removed but yours remains, then it's a victory by stones.
- *   4-3. If your king is removed but the opponent's remains, then it's a king's suicide.
- *   4-4. When a large number (>= 2 or 3, according to @re_hako_moon) is removed, then "ShoGoSs!" should be shouted
+ * 1. Remove all the opponent's pieces and stones surrounded by your pieces and stones
+ * 2. Remove all your pieces and stones surrounded by the opponent's pieces and stones
+ * 3. Checks whether two pawns occupy the same column, and checks whether a king is removed from the board.
+ *   3-1. If both kings are removed, that is a draw, and therefore a Karate Rock-Paper-Scissors Boxing.
+ *   3-2. If your king is removed but the opponent's remains, then it's a loss by king's suicide.
+ *   3-3. If the opponent's king is removed but yours remains, 
+ *        3-3-1. If no two pawns occupy the same column, then it's a victory
+ *             3-3-1-1. If the step that removed the opponent's king was step 1, 
+ *                      and when a large number (>= 2 or 3, according to @re_hako_moon) 
+ *                      of pieces/stones are removed, then "ShoGoSs!" should be shouted
+ * 
+ * The ordering 1 → 2 is to support the combination attack.
+ * The ordering 2 → 3 is explicitly mentioned by the addendum to the official rule: 
+ *         「石フェイズを着手した結果として自分のポーン兵が盤上から消え二ポが解決される場合も、反則をとらず進行できる。」
  **/
 function resolve(after_stone_phase: StonePhasePlayed): ResolvedGameState | GameEnd {
+    return {
+        phase: "resolved",
+        board: after_stone_phase.board,
+        hand_of_black: after_stone_phase.hand_of_black,
+        hand_of_white: after_stone_phase.hand_of_white,
+        who_goes_next: invertSide(after_stone_phase.by_whom)
+    }
     throw new Error("Function not implemented.");
 }
 
@@ -141,3 +160,18 @@ export function from_resolved_to_resolved(old: ResolvedGameState, move: Move): R
     return resolve(after_stone_phase)
 }
 
+export function main(moves: Move[]): ResolvedGameState | GameEnd {
+    if (moves.length === 0) {
+        throw new Error("棋譜が空です");
+    }
+    const who_goes_first = moves[0]!.piece_phase.side;
+    let state = get_initial_state(who_goes_first);
+    for (const move of moves) {
+        const next = from_resolved_to_resolved(state, move);
+        if (next.phase === "game_end") {
+            return next;
+        }
+        state = next;
+    }
+    return state;
+}

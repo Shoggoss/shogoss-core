@@ -1,8 +1,11 @@
+import { coordDiff, Coordinate, LeftmostWhenSeenFromBlack, RightmostWhenSeenFromBlack } from "./coordinate";
+
 export type Tuple9<T> = [T, T, T, T, T, T, T, T, T];
 export type Hand = ShogiProfession[];
 export type Phase = "piece_phase_played" | "stone_phase_played" | "resolved"
 export type GameState = ResolvedGameState | PiecePhasePlayed | StonePhasePlayed;
 export type GameEnd = {
+    phase: "game_end",
     victor: Side | "KarateRPSBoxing",
     reason: "doubled_pawns" | "king_captured_by_stone" | "king_captured_by_piece" | "king_suicide"
 }
@@ -37,8 +40,8 @@ export function invertSide(side: Side): Side {
 export type Entity =
     | { type: "しょ", side: Side, prof: ShogiProfession, can_kumal: boolean } // shogi_piece
     | { type: "碁", side: Side } // go_stone
-    | { type: "ス", side: Side, prof: ChessProfession, can_castle: boolean } // chess_piece
-    | { type: "王", side: Side, prof: KingProfession, can_castle: boolean, can_kumal: boolean }
+    | { type: "ス", side: Side, prof: ChessProfession, never_moved: boolean } // chess_piece
+    | { type: "王", side: Side, prof: KingProfession, has_moved_only_once: boolean, never_moved: boolean }
 export type Profession = KingProfession | ShogiProfession | ChessProfession;
 export type UnpromotedShogiProfession =
     | "香" // lance 
@@ -92,41 +95,6 @@ export type KingProfession =
     | "キ" // king
     | "超" // promoted_king
 
-export type ShogiColumnName = "１" | "２" | "３" | "４" | "５" | "６" | "７" | "８" | "９";
-export type ShogiRowName = "一" | "二" | "三" | "四" | "五" | "六" | "七" | "八" | "九";
-
-export type Coordinate = Readonly<[ShogiColumnName, ShogiRowName]>;
-export function displayCoord(coord: Coordinate) {
-    return `${coord[0]}${coord[1]}`;
-}
-
-export function coordEq([col1, row1]: Coordinate, [col2, row2]: Coordinate) {
-    return col1 === col2 && row1 === row2;
-}
-
-function RightmostWhenSeenFromBlack(coords: ReadonlyArray<Coordinate>): Coordinate[] {
-    if (coords.length === 0) { throw new Error("tried to take the maximum of an empty array"); }
-
-    // Since "１" to "９" are consecutive in Unicode, we can just sort it as UTF-16 string
-    const columns = coords.map(([col, _row]) => col);
-    columns.sort();
-
-    const rightmost_column = columns[0]!;
-
-    return coords.filter(([col, _row]) => col === rightmost_column);
-}
-
-function LeftmostWhenSeenFromBlack(coords: ReadonlyArray<Coordinate>): Coordinate[] {
-    if (coords.length === 0) { throw new Error("tried to take the maximum of an empty array"); }
-
-    // Since "１" to "９" are consecutive in Unicode, we can just sort it as UTF-16 string
-    const columns = coords.map(([col, _row]) => col);
-    columns.sort();
-
-    const leftmost_column = columns[columns.length - 1]!;
-
-    return coords.filter(([col, _row]) => col === leftmost_column);
-}
 
 export function RightmostWhenSeenFrom(side: Side, coords: ReadonlyArray<Coordinate>): Coordinate[] {
     if (side === "黒") {
@@ -144,6 +112,16 @@ export function LeftmostWhenSeenFrom(side: Side, coords: ReadonlyArray<Coordinat
     }
 }
 
+/** vertical が +1 = 前進　　horizontal が +1 = 左
+ */
+export function coordDiffSeenFrom(side: Side, o: { from: Coordinate, to: Coordinate }) {
+    if (side === "白") {
+        return coordDiff(o);
+    } else {
+        const { h, v } = coordDiff(o);
+        return { h: -h, v: -v };
+    }
+}
 
 export type PiecePhaseMove = {
     side: Side,
