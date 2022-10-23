@@ -98,6 +98,7 @@ function place_stone(old: PiecePhasePlayed, side: Side, stone_to: Coordinate): S
         hand_of_white: old.hand_of_white,
         by_whom: old.by_whom,
     };
+    throw new Error("着手禁止の判定が未実装 / not implemented");
 }
 
 export function from_resolved_to_resolved(old: ResolvedGameState, move: Move): ResolvedGameState | GameEnd {
