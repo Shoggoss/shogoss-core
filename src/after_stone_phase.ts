@@ -48,18 +48,24 @@ export function resolve_after_stone_phase(played: StonePhasePlayed): ResolvedGam
     const is_your_king_alive = king_is_alive(played.board, played.by_whom);
     const is_opponents_king_alive = king_is_alive(played.board, opponentOf(played.by_whom));
 
+    const situation = {
+        board: played.board,
+        hand_of_black: played.hand_of_black,
+        hand_of_white: played.hand_of_white,
+    };
+
     if (!is_your_king_alive) {
         if (!is_opponents_king_alive) {
-            return { phase: "game_end", reason: "both_king_dead", victor: "KarateJankenBoxing" };
+            return { phase: "game_end", reason: "both_king_dead", victor: "KarateJankenBoxing", final_situation: situation };
         } else {
-            return { phase: "game_end", reason: "king_suicide", victor: opponentOf(played.by_whom) };
+            return { phase: "game_end", reason: "king_suicide", victor: opponentOf(played.by_whom), final_situation: situation };
         }
     } else {
         if (!is_opponents_king_alive) {
             if (!doubled_pawns_exist) {
-                return { phase: "game_end", reason: "king_capture", victor: played.by_whom };
+                return { phase: "game_end", reason: "king_capture", victor: played.by_whom, final_situation: situation };
             } else {
-                return { phase: "game_end", reason: "king_capture_and_doubled_pawns", victor: "KarateJankenBoxing" };
+                return { phase: "game_end", reason: "king_capture_and_doubled_pawns", victor: "KarateJankenBoxing", final_situation: situation };
             }
         } else {
             if (!doubled_pawns_exist) {
@@ -71,7 +77,7 @@ export function resolve_after_stone_phase(played: StonePhasePlayed): ResolvedGam
                     who_goes_next: opponentOf(played.by_whom)
                 }
             } else {
-                return { phase: "game_end", reason: "doubled_pawns", victor: opponentOf(played.by_whom) };
+                return { phase: "game_end", reason: "doubled_pawns", victor: opponentOf(played.by_whom), final_situation: situation };
             }
         }
     }

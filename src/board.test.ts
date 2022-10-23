@@ -27,6 +27,15 @@ test('get_entity_from_coord_throw', () => {
 		.toThrow("座標「５百」は不正です");
 });
 
+test('get_entity_from_coord_throw', () => {
+	expect(() => put_entity_at_coord_and_also_adjust_flags(
+		get_initial_state("黒").board,
+		["５", "百" as ShogiRowName],
+		{ type: "しょ", prof: "成桂", side: "黒", can_kumal: false }
+	))
+		.toThrow("座標「５百」は不正です");
+});
+
 test('lookup_coord', () => {
 	expect(lookup_coord_from_side_and_prof(get_initial_state("黒").board, "黒", "ビ")).toEqual([
 		["３", "八"],
@@ -59,6 +68,6 @@ test('piece_move', () => {
 	const queen = get_entity_from_coord(board, ["５", "八"]);
 	put_entity_at_coord_and_also_adjust_flags(board, ["５", "八"], null);
 	put_entity_at_coord_and_also_adjust_flags(board, ["５", "五"], queen);
-	expect(get_entity_from_coord(board, ["５", "五"])).toEqual( { type: "ス", side: "黒", prof: "ク", never_moved: false });
+	expect(get_entity_from_coord(board, ["５", "五"])).toEqual({ type: "ス", side: "黒", prof: "ク", never_moved: false });
 
 });
