@@ -203,7 +203,7 @@ function kumaling(old: ResolvedGameState, o: { from: Coordinate, to: Coordinate,
     }
 }
 
-/** `o.side` が駒を `o.from` から `o.to` に動かす。その駒が合法的に動ける位置であるかは問わない。キャスリング・くまりんぐは扱わない。 
+/** `o.side` が駒を `o.from` から `o.to` に動かす。その駒が `o.from` から `o.to` へと can_move であることを要求する。キャスリング・くまりんぐは扱わないが、アンパッサンは扱う。 
  */
 function move_piece(old: ResolvedGameState, o: { from: Coordinate, to: Coordinate, side: Side, promote: boolean | null }): PiecePhasePlayed {
     const piece_that_moves = get_entity_from_coord(old.board, o.from);
@@ -213,6 +213,31 @@ function move_piece(old: ResolvedGameState, o: { from: Coordinate, to: Coordinat
         throw new Error(`${o.side}が${displayCoord(o.from)}から${displayCoord(o.to)}への移動を試みていますが、${displayCoord(o.from)}にあるのは碁石であり、駒ではありません`);
     } else if (piece_that_moves.side !== o.side) {
         throw new Error(`${o.side}が${displayCoord(o.from)}から${displayCoord(o.to)}への移動を試みていますが、${displayCoord(o.from)}にあるのは${opponentOf(o.side)}の駒です`);
+    }
+
+    const res: boolean | "en passant" = can_move(old.board, { from: o.from, to: o.to });
+    if (res === "en passant") {
+        /**
+         *          from[0] to[0]
+         *         |  ..  |  ..  |
+         * to[1]   |  ..  |  to  | 
+         * from[1] | from | pawn |
+         */
+        const coord_horizontally_adjacent: Coordinate = [o.to[0], o.from[1]];
+
+        put_entity_at_coord_and_also_adjust_flags(old.board, o.to, piece_that_moves);
+        put_entity_at_coord_and_also_adjust_flags(old.board, o.from, null);
+        put_entity_at_coord_and_also_adjust_flags(old.board, coord_horizontally_adjacent, null);
+
+        return {
+            phase: "piece_phase_played",
+            board: old.board,
+            hand_of_black: old.hand_of_black,
+            hand_of_white: old.hand_of_white,
+            by_whom: old.who_goes_next
+        }
+    } else if (!res) {
+        throw new Error(`${o.side}が${displayCoord(o.from)}から${displayCoord(o.to)}への移動を試みていますが、駒の動き上そのような移動はできません`)
     }
 
     if (o.promote) {
@@ -298,7 +323,7 @@ function deltaEq(d: { v: number, h: number }, delta: { v: number, h: number }) {
  * @param o 
  * @returns 
  */
-export function can_move(board: Readonly<Board>, o: { from: Coordinate, to: Coordinate }): boolean {
+export function can_move(board: Readonly<Board>, o: { from: Coordinate, to: Coordinate }): boolean | "en passant" {
     const p = get_entity_from_coord(board, o.from);
     if (!p) {
         return false;
@@ -329,12 +354,15 @@ export function can_move(board: Readonly<Board>, o: { from: Coordinate, to: Coor
         } else {
             const coord_horizontally_adjacent = applyDeltaSeenFrom(p.side, o.from, { v: 0, h: delta.h });
             const piece_horizontally_adjacent = get_entity_from_coord(board, coord_horizontally_adjacent);
-            if (o.from[1] === "五" && piece_horizontally_adjacent?.type === "ス" && piece_horizontally_adjacent.prof === "ポ") {
-                throw new Error("possibility of en passant; not implemented");
+            if (o.from[1] === "五"
+                && piece_horizontally_adjacent?.type === "ス"
+                && piece_horizontally_adjacent.prof === "ポ"
+                && piece_horizontally_adjacent.subject_to_en_passant) {
+                return "en passant";
             } else {
                 return false;
             }
-        } 
+        }
     }
 
     if (p.never_moved && delta.v === 2 && delta.h === 0) {

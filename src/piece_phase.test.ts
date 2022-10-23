@@ -1,5 +1,5 @@
 import { disambiguate_piece_phase_and_apply, can_see, can_move } from "./piece_phase"
-import { get_initial_state } from "./index"
+import { from_resolved_to_resolved, get_initial_state } from "./index"
 import { PiecePhasePlayed } from "./type";
 import { put_entity_at_coord_and_also_adjust_flags } from "./board";
 
@@ -47,7 +47,7 @@ test('what pawn can see / how a pawn can move', () => {
 
 test('fully specified', () => {
 	const knight_move: PiecePhasePlayed = disambiguate_piece_phase_and_apply(
-		get_initial_state("黒"), 
+		get_initial_state("黒"),
 		{ side: "黒", to: ["１", "六"], from: ["２", "八"], prof: "ナ" }
 	);
 	expect(knight_move).toEqual({
@@ -108,7 +108,7 @@ test('fully specified', () => {
 				{ type: "ス", side: "黒", prof: "ク", never_moved: true },
 				null,
 				{ type: "ス", side: "黒", prof: "ビ", never_moved: true },
-				null, 
+				null,
 				{ type: "ス", side: "黒", prof: "ル", never_moved: true },
 			],
 			[
@@ -129,15 +129,105 @@ test('fully specified', () => {
 	})
 });
 
+test('en passant', () => {
+	const state = get_initial_state("黒");
+
+	// destroy the pawn at ５七 to avoid 二ポ
+	put_entity_at_coord_and_also_adjust_flags(state.board, ["５", "七"], null);
+
+	const state2 = from_resolved_to_resolved(state, { piece_phase: { side: "黒", to: ["６", "五"], prof: "ポ" } });
+	if (state2.phase === "game_end") { throw new Error(""); }
+	const state3 = from_resolved_to_resolved(state2, { piece_phase: { side: "白", to: ["５", "五"], prof: "ポ" } });
+	if (state3.phase === "game_end") { throw new Error(""); }
+	const state4 = from_resolved_to_resolved(state, { piece_phase: { side: "黒", to: ["５", "四"], prof: "ポ" } });
+	expect(state4).toEqual({
+		phase: "resolved",
+		hand_of_black: [],
+		hand_of_white: [],
+		who_goes_next: "白",
+		board: [
+			[
+				{ type: "しょ", side: "白", prof: "香", can_kumal: true },
+				{ type: "しょ", side: "白", prof: "桂", can_kumal: false },
+				{ type: "しょ", side: "白", prof: "銀", can_kumal: false },
+				{ type: "しょ", side: "白", prof: "金", can_kumal: false },
+				{ type: "王", side: "白", prof: "キ", never_moved: true, has_moved_only_once: false },
+				{ type: "しょ", side: "白", prof: "金", can_kumal: false },
+				{ type: "しょ", side: "白", prof: "銀", can_kumal: false },
+				{ type: "しょ", side: "白", prof: "桂", can_kumal: false },
+				{ type: "しょ", side: "白", prof: "香", can_kumal: true },
+			],
+			[
+				{ type: "ス", side: "白", prof: "ル", never_moved: true },
+				{ type: "ス", side: "白", prof: "ナ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ビ", never_moved: true },
+				null,
+				{ type: "ス", side: "白", prof: "ク", never_moved: true },
+				null,
+				{ type: "ス", side: "白", prof: "ビ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ナ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ル", never_moved: true },
+			],
+			[
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+				null,
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+			],
+			[null, null, null, null, { type: "ス", side: "黒", prof: "ポ", never_moved: false }, null, null, null, null,],
+			[null, null, null, null, null, null, null, null, null,],
+			[null, null, null, null, null, null, null, null, null,],
+			[
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
+				null,
+				null,
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
+			],
+			[
+				{ type: "ス", side: "黒", prof: "ル", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ナ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ビ", never_moved: true },
+				null,
+				{ type: "ス", side: "黒", prof: "ク", never_moved: true },
+				null,
+				{ type: "ス", side: "黒", prof: "ビ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ナ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ル", never_moved: true },
+			],
+			[
+				{ type: "しょ", side: "黒", prof: "香", can_kumal: true },
+				{ type: "しょ", side: "黒", prof: "桂", can_kumal: false },
+				{ type: "しょ", side: "黒", prof: "銀", can_kumal: false },
+				{ type: "しょ", side: "黒", prof: "金", can_kumal: false },
+				{ type: "王", side: "黒", prof: "キ", never_moved: true, has_moved_only_once: false },
+				{ type: "しょ", side: "黒", prof: "金", can_kumal: false },
+				{ type: "しょ", side: "黒", prof: "銀", can_kumal: false },
+				{ type: "しょ", side: "黒", prof: "桂", can_kumal: false },
+				{ type: "しょ", side: "黒", prof: "香", can_kumal: true },
+			],
+		]
+	})
+})
+
 
 test('５八金右', () => {
 	const state = get_initial_state("黒");
 
 	// First, destroy the queen
 	put_entity_at_coord_and_also_adjust_flags(state.board, ["５", "八"], null);
-	
+
 	const gold_move: PiecePhasePlayed = disambiguate_piece_phase_and_apply(
-		state, 
+		state,
 		{ side: "黒", to: ["５", "八"], from: "右", prof: "金" }
 	);
 	expect(gold_move).toEqual({
@@ -224,9 +314,9 @@ test('５八金左', () => {
 
 	// First, destroy the queen
 	put_entity_at_coord_and_also_adjust_flags(state.board, ["５", "八"], null);
-	
+
 	const gold_move: PiecePhasePlayed = disambiguate_piece_phase_and_apply(
-		state, 
+		state,
 		{ side: "黒", to: ["５", "八"], from: "左", prof: "金" }
 	);
 	expect(gold_move).toEqual({
@@ -313,9 +403,9 @@ test('５二金右', () => {
 
 	// First, destroy the queen
 	put_entity_at_coord_and_also_adjust_flags(state.board, ["５", "二"], null);
-	
+
 	const gold_move: PiecePhasePlayed = disambiguate_piece_phase_and_apply(
-		state, 
+		state,
 		{ side: "白", to: ["５", "二"], from: "右", prof: "金" }
 	);
 	expect(gold_move).toEqual({
@@ -402,9 +492,9 @@ test('５二金左', () => {
 
 	// First, destroy the queen
 	put_entity_at_coord_and_also_adjust_flags(state.board, ["５", "二"], null);
-	
+
 	const gold_move: PiecePhasePlayed = disambiguate_piece_phase_and_apply(
-		state, 
+		state,
 		{ side: "白", to: ["５", "二"], from: "左", prof: "金" }
 	);
 	expect(gold_move).toEqual({
@@ -547,7 +637,7 @@ test('disambiguate', () => {
 				{ type: "ス", side: "黒", prof: "ク", never_moved: true },
 				null,
 				{ type: "ス", side: "黒", prof: "ビ", never_moved: true },
-				null, 
+				null,
 				{ type: "ス", side: "黒", prof: "ル", never_moved: true },
 			],
 			[
