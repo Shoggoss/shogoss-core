@@ -1,6 +1,7 @@
 import { get_entity_from_coord, lookup_coords_from_side_and_prof, put_entity_at_coord_and_also_adjust_flags } from "./board";
-import { Board, coordDiffSeenFrom, opponentOf, isShogiProfession, LeftmostWhenSeenFrom, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, RightmostWhenSeenFrom, ShogiProfession, Side, unpromote, UnpromotedShogiProfession, isUnpromotedShogiProfession } from "./type"
+import { Board, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, unpromote, UnpromotedShogiProfession, isUnpromotedShogiProfession } from "./type"
 import { coordEq, Coordinate, displayCoord, ShogiColumnName, ShogiRowName } from "./coordinate"
+import { Side, coordDiffSeenFrom, RightmostWhenSeenFrom, LeftmostWhenSeenFrom, opponentOf } from "./side";
 
 /** 駒を打つ。手駒から将棋駒を盤上に移動させる。行きどころの無い位置に桂馬と香車を打ったらエラー。
  * 
@@ -16,7 +17,7 @@ function parachute(old: ResolvedGameState, o: { side: Side, prof: UnpromotedShog
         }
     } else if (o.prof === "香") {
         if ((o.side === "黒" && o.to[1] === "一")
-            || (o.side === "白" &&  o.to[1] === "九")) {
+            || (o.side === "白" && o.to[1] === "九")) {
             throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}打とのことですが、行きどころのない香車は打てません`);
         }
     }

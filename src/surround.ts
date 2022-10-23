@@ -1,4 +1,4 @@
-import { Side } from "./type";
+import { Side } from "./side";
 
 type GoSquare = "empty" | { side: Side, visited: boolean, connected_component_index: number };
 

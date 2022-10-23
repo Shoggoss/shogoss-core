@@ -1,5 +1,6 @@
-import { Board, Entity, Profession, Side } from "./type";
+import { Board, Entity, Profession } from "./type";
 import { Coordinate, displayCoord, ShogiColumnName, ShogiRowName } from "./coordinate";
+import { Side } from "./side";
 export function get_entity_from_coord(board: Readonly<Board>, coord: Coordinate): Entity | null {
     const [column, row] = coord;
     const row_index = "一二三四五六七八九".indexOf(row);
@@ -75,3 +76,4 @@ export function lookup_coords_from_side_and_prof(board: Readonly<Board>, side: S
     }
     return ans;
 }
+

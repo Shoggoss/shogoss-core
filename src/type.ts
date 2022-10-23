@@ -1,4 +1,5 @@
-import { coordDiff, Coordinate, LeftmostWhenSeenFromBlack, RightmostWhenSeenFromBlack } from "./coordinate";
+import { Coordinate } from "./coordinate";
+import { Side } from "./side";
 
 export type Tuple9<T> = [T, T, T, T, T, T, T, T, T];
 export type Hand = UnpromotedShogiProfession[];
@@ -43,11 +44,7 @@ export type StonePhasePlayed = {
 }
 export type Board = Tuple9<Row>;
 export type Row = Tuple9<Entity | null>;
-export type Side = "黒" | "白";
-export function opponentOf(side: Side): Side {
-    if (side === "黒") return "白";
-    else return "黒";
-}
+
 export type Entity =
     | { type: "しょ", side: Side, prof: ShogiProfession, can_kumal: boolean } // shogi_piece
     | { type: "碁", side: Side } // go_stone
@@ -113,33 +110,6 @@ export type KingProfession =
     | "キ" // king
     | "超" // promoted_king
 
-
-export function RightmostWhenSeenFrom(side: Side, coords: ReadonlyArray<Coordinate>): Coordinate[] {
-    if (side === "黒") {
-        return RightmostWhenSeenFromBlack(coords);
-    } else {
-        return LeftmostWhenSeenFromBlack(coords);
-    }
-}
-
-export function LeftmostWhenSeenFrom(side: Side, coords: ReadonlyArray<Coordinate>): Coordinate[] {
-    if (side === "黒") {
-        return LeftmostWhenSeenFromBlack(coords);
-    } else {
-        return RightmostWhenSeenFromBlack(coords);
-    }
-}
-
-/** vertical が +1 = 前進　　horizontal が +1 = 左
- */
-export function coordDiffSeenFrom(side: Side, o: { from: Coordinate, to: Coordinate }) {
-    if (side === "白") {
-        return coordDiff(o);
-    } else {
-        const { h, v } = coordDiff(o);
-        return { h: -h, v: -v };
-    }
-}
 
 export type PiecePhaseMove = {
     side: Side,

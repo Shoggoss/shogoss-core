@@ -42,3 +42,9 @@ test("行きどころのない香車", () => {
             { "piece_phase": { "side": "黒", "to": ["３", "一"], "prof": "香" }, },
     ], state)).toThrowError(`黒が３一香打とのことですが、行きどころのない香車は打てません`)
 });
+
+test("成れないときに「成」", () => {
+    expect(() => main([
+        { "piece_phase": { "side": "黒", "to": ["７", "六"], "prof": "ポ", promotes: true }, },
+    ])).toThrowError(``);
+});
