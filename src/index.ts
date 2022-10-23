@@ -114,12 +114,11 @@ export function from_resolved_to_resolved(old: ResolvedGameState, move: Move): R
     return resolve_after_stone_phase(after_stone_phase)
 }
 
-export function main(moves: Move[]): ResolvedGameState | GameEnd {
+export function main(moves: Move[], initial_state?: ResolvedGameState): ResolvedGameState | GameEnd {
     if (moves.length === 0) {
         throw new Error("棋譜が空です");
     }
-    const who_goes_first = moves[0]!.piece_phase.side;
-    let state = get_initial_state(who_goes_first);
+    let state = initial_state ?? get_initial_state(moves[0]!.piece_phase.side);
     for (const move of moves) {
         const next = from_resolved_to_resolved(state, move);
         if (next.phase === "game_end") {
