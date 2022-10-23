@@ -1,7 +1,8 @@
 import { delete_en_passant_flag, lookup_coords_from_side_and_prof } from "./board";
 import { ShogiColumnName } from "./coordinate";
+import { opponentOf, Side } from "./side";
 import { remove_surrounded } from "./surround";
-import { Board, Entity, GameEnd, opponentOf, ResolvedGameState, Side, StonePhasePlayed, unpromote } from "./type";
+import { Board, Entity, GameEnd, ResolvedGameState, StonePhasePlayed, unpromote } from "./type";
 
 /** 石フェイズが終了した後、勝敗判定と囲碁検査をする。 / To be called after a stone is placed: checks the victory condition and the game-of-go condition.
  * また、相手のポ兵にアンパッサンフラグがついていたら、それを取り除く（自分が手を指したことによって、アンパッサンの権利が失われたので） 

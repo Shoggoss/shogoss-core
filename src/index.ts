@@ -1,8 +1,9 @@
 import { get_entity_from_coord, put_entity_at_coord_and_also_adjust_flags } from "./board";
 import { disambiguate_piece_phase_and_apply } from "./piece_phase";
-import { GameEnd, Move, PiecePhasePlayed, ResolvedGameState, Side, StonePhasePlayed } from "./type"
+import { GameEnd, Move, PiecePhasePlayed, ResolvedGameState, StonePhasePlayed } from "./type"
 import { Coordinate, displayCoord } from "./coordinate";
 import { resolve_after_stone_phase } from "./after_stone_phase";
+import { Side } from "./side";
 export const get_initial_state: (who_goes_first: Side) => ResolvedGameState = (who_goes_first: Side) => {
     return {
         phase: "resolved",
@@ -118,8 +119,11 @@ export function main(moves: Move[]): ResolvedGameState | GameEnd {
     if (moves.length === 0) {
         throw new Error("棋譜が空です");
     }
-    const who_goes_first = moves[0]!.piece_phase.side;
-    let state = get_initial_state(who_goes_first);
+    return from_custom_state(moves, get_initial_state(moves[0]!.piece_phase.side));
+}
+
+export function from_custom_state(moves: Move[], initial_state: ResolvedGameState): ResolvedGameState | GameEnd {
+    let state = initial_state;
     for (const move of moves) {
         const next = from_resolved_to_resolved(state, move);
         if (next.phase === "game_end") {
