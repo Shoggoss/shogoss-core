@@ -217,7 +217,27 @@ test('en passant', () => {
 			],
 		]
 	})
-})
+});
+
+test('en passant fails', () => {
+	const state = get_initial_state("黒");
+
+	// destroy the pawn at ５七 to avoid 二ポ
+	put_entity_at_coord_and_also_adjust_flags(state.board, ["５", "七"], null);
+
+	const state2 = from_resolved_to_resolved(state, { piece_phase: { side: "黒", to: ["６", "五"], prof: "ポ" } });
+	if (state2.phase === "game_end") { throw new Error(""); }
+	const state3 = from_resolved_to_resolved(state2, { piece_phase: { side: "白", to: ["５", "五"], prof: "ポ" } });
+	if (state3.phase === "game_end") { throw new Error(""); }
+	const state4 = from_resolved_to_resolved(state3, { piece_phase: { side: "黒", to: ["７", "六"], prof: "ナ" } });
+	if (state4.phase === "game_end") { throw new Error(""); }
+	const state5 = from_resolved_to_resolved(state4, { piece_phase: { side: "白", to: ["７", "四"], prof: "ナ" } });
+	if (state5.phase === "game_end") { throw new Error(""); }
+
+	// Cannot do en passant, since there are intervening moves
+	expect(() => from_resolved_to_resolved(state5, { piece_phase: { side: "黒", to: ["５", "四"], prof: "ポ" } })).toThrowError("黒が５四ポとのことですが、そのような移動ができる黒のポーン兵は盤上にありません");
+	
+});
 
 
 test('５八金右', () => {

@@ -19,12 +19,12 @@ test('get_entity_from_coord_gold', () => {
 
 test('get_entity_from_coord_throw', () => {
 	expect(() => get_entity_from_coord(get_initial_state("黒").board, ["ク" as ShogiColumnName, "トゥ" as ShogiRowName]))
-		.toThrow("座標「クトゥ」は不正です");
+		.toThrowError("座標「クトゥ」は不正です");
 });
 
 test('get_entity_from_coord_throw', () => {
 	expect(() => get_entity_from_coord(get_initial_state("黒").board, ["５", "百" as ShogiRowName]))
-		.toThrow("座標「５百」は不正です");
+		.toThrowError("座標「５百」は不正です");
 });
 
 test('get_entity_from_coord_throw', () => {
@@ -33,7 +33,7 @@ test('get_entity_from_coord_throw', () => {
 		["５", "百" as ShogiRowName],
 		{ type: "しょ", prof: "成桂", side: "黒", can_kumal: false }
 	))
-		.toThrow("座標「５百」は不正です");
+		.toThrowError("座標「５百」は不正です");
 });
 
 test('lookup_coord', () => {
