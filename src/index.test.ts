@@ -1,4 +1,4 @@
-import { get_initial_state, main } from ".";
+import { from_custom_state, get_initial_state, main } from ".";
 import { put_entity_at_coord_and_also_adjust_flags } from "./board";
 
 test('en passant', () => {
@@ -7,7 +7,7 @@ test('en passant', () => {
 	// destroy the pawn at ５七 to avoid 二ポ
 	put_entity_at_coord_and_also_adjust_flags(state.board, ["５", "七"], null);
 
-	expect(main([
+	expect(from_custom_state([
 		{ piece_phase: { side: "黒", to: ["６", "五"], prof: "ポ" } },
 		{ piece_phase: { side: "白", to: ["５", "五"], prof: "ポ" } },
 		{ piece_phase: { side: "黒", to: ["５", "四"], prof: "ポ" } }

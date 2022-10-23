@@ -1,4 +1,4 @@
-import { get_initial_state, main } from ".";
+import { from_custom_state, get_initial_state, main } from ".";
 import { put_entity_at_coord_and_also_adjust_flags } from "./board";
 
 test('en passant fails', () => {
@@ -8,7 +8,7 @@ test('en passant fails', () => {
     put_entity_at_coord_and_also_adjust_flags(state.board, ["５", "七"], null);
 
     // Cannot do en passant, since there are intervening moves
-    expect(() => main([
+    expect(() => from_custom_state([
         { piece_phase: { side: "黒", to: ["６", "五"], prof: "ポ" } },
         { piece_phase: { side: "白", to: ["５", "五"], prof: "ポ" } },
         { piece_phase: { side: "黒", to: ["７", "六"], prof: "ナ" } },
@@ -36,7 +36,7 @@ test("行きどころのない香車", () => {
         { prof: "香", type: "しょ", side: "白", can_kumal: false }
     );
     expect(() =>
-        main([
+        from_custom_state([
             { "piece_phase": { "side": "黒", "to": ["５", "六"], "prof": "ポ" }, },
             { "piece_phase": { "side": "白", "to": ["４", "二"], "prof": "銀" }, },
             { "piece_phase": { "side": "黒", "to": ["３", "一"], "prof": "香" }, },

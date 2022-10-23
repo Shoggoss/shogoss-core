@@ -114,11 +114,15 @@ export function from_resolved_to_resolved(old: ResolvedGameState, move: Move): R
     return resolve_after_stone_phase(after_stone_phase)
 }
 
-export function main(moves: Move[], initial_state?: ResolvedGameState): ResolvedGameState | GameEnd {
+export function main(moves: Move[]): ResolvedGameState | GameEnd {
     if (moves.length === 0) {
         throw new Error("棋譜が空です");
     }
-    let state = initial_state ?? get_initial_state(moves[0]!.piece_phase.side);
+    return from_custom_state(moves, get_initial_state(moves[0]!.piece_phase.side));
+}
+
+export function from_custom_state(moves: Move[], initial_state: ResolvedGameState): ResolvedGameState | GameEnd {
+    let state = initial_state;
     for (const move of moves) {
         const next = from_resolved_to_resolved(state, move);
         if (next.phase === "game_end") {
