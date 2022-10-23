@@ -46,5 +46,11 @@ test("行きどころのない香車", () => {
 test("成れないときに「成」", () => {
     expect(() => main([
         { "piece_phase": { "side": "黒", "to": ["７", "六"], "prof": "ポ", promotes: true }, },
-    ])).toThrowError(``);
+    ])).toThrowError(`黒が７六ポ成とのことですが、この移動は成りを発生させないので「成」表記はできません`);
+});
+
+test("そもそも成れないときに「不成」", () => {
+    expect(() => main([
+        { "piece_phase": { "side": "黒", "to": ["７", "六"], "prof": "ポ", promotes: false }, },
+    ])).toThrowError(`黒が７六ポ不成とのことですが、この移動は成りを発生させないので「不成」表記はできません`);
 });

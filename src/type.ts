@@ -110,6 +110,9 @@ export type KingProfession =
     | "キ" // king
     | "超" // promoted_king
 
+export function is_promotable(prof: Profession): boolean {
+    return prof === "桂" || prof === "銀" || prof === "香" || prof === "キ" || prof === "ポ";
+}
 
 export type PiecePhaseMove = {
     side: Side,

@@ -1,5 +1,5 @@
 import { get_entity_from_coord, lookup_coords_from_side_and_prof, put_entity_at_coord_and_also_adjust_flags } from "./board";
-import { Board, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, unpromote, UnpromotedShogiProfession, isUnpromotedShogiProfession } from "./type"
+import { Board, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, unpromote, UnpromotedShogiProfession, isUnpromotedShogiProfession, is_promotable } from "./type"
 import { coordEq, Coordinate, displayCoord, ShogiColumnName, ShogiRowName } from "./coordinate"
 import { Side, coordDiffSeenFrom, RightmostWhenSeenFrom, LeftmostWhenSeenFrom, opponentOf, is_within_nth_furthest_rows } from "./side";
 
@@ -250,7 +250,9 @@ function move_piece(old: ResolvedGameState, o: { from: Coordinate, to: Coordinat
         throw new Error(`${o.side}が${displayCoord(o.from)}から${displayCoord(o.to)}への移動を試みていますが、駒の動き上そのような移動はできません`)
     }
 
-    if (o.promote) {
+    if (is_promotable(piece_that_moves.prof)
+        && (is_within_nth_furthest_rows(3, o.side, o.from) || is_within_nth_furthest_rows(3, o.side, o.to))
+        && o.promote) {
         if (piece_that_moves.prof === "桂") {
             piece_that_moves.prof = "成桂";
         } else if (piece_that_moves.prof === "銀") {
@@ -262,7 +264,12 @@ function move_piece(old: ResolvedGameState, o: { from: Coordinate, to: Coordinat
         } else if (piece_that_moves.prof === "ポ") {
             piece_that_moves.prof = "と";
         }
+    } else {
+        if (o.promote !== null) {
+            throw new Error(`${o.side}が${displayCoord(o.to)}${piece_that_moves.prof}${o.promote ? "成" : "不成"}とのことですが、この移動は成りを発生させないので「${o.promote ? "成" : "不成"}」表記はできません`);
+        }
     }
+
 
     const occupier = get_entity_from_coord(old.board, o.to);
     if (!occupier) {
