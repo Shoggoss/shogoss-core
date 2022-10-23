@@ -4,14 +4,21 @@ export type Tuple9<T> = [T, T, T, T, T, T, T, T, T];
 export type Hand = UnpromotedShogiProfession[];
 export type Phase = "piece_phase_played" | "stone_phase_played" | "resolved"
 export type GameState = ResolvedGameState | PiecePhasePlayed | StonePhasePlayed;
+export type Situation = {
+    board: Board,
+    hand_of_black: Hand,
+    hand_of_white: Hand,
+};
 export type GameEnd = {
     phase: "game_end",
     victor: Side,
-    reason: "doubled_pawns" | "king_capture" | "king_suicide"
+    reason: "doubled_pawns" | "king_capture" | "king_suicide",
+    final_situation: Situation
 } | {
     phase: "game_end",
     victor: "KarateJankenBoxing",
-    reason: "both_king_dead" | "king_capture_and_doubled_pawns"
+    reason: "both_king_dead" | "king_capture_and_doubled_pawns",
+    final_situation: Situation
 }
 export type ResolvedGameState = {
     phase: "resolved",
