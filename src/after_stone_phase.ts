@@ -1,9 +1,11 @@
-import { lookup_coord_from_side_and_prof } from "./board";
+import { delete_en_passant_flag, lookup_coords_from_side_and_prof } from "./board";
 import { ShogiColumnName } from "./coordinate";
 import { remove_surrounded } from "./surround";
 import { Board, Entity, GameEnd, opponentOf, ResolvedGameState, Side, StonePhasePlayed, unpromote } from "./type";
 
 /** 石フェイズが終了した後、勝敗判定と囲碁検査をする。 / To be called after a stone is placed: checks the victory condition and the game-of-go condition.
+ * また、相手のポ兵にアンパッサンフラグがついていたら、それを取り除く（自分が手を指したことによって、アンパッサンの権利が失われたので） 
+ * Also, if the opponent's pawn has an en passant flag, delete it (since, by playing a piece unrelated to en passant, you have lost the right to capture by en passant)
  * 
  * 1. 自分の駒と石によって囲まれている相手の駒と石をすべて取り除く
  * 2. 相手の駒と石によって囲まれている自分の駒と石をすべて取り除く
@@ -44,6 +46,8 @@ export function resolve_after_stone_phase(played: StonePhasePlayed): ResolvedGam
 
     remove_surrounded_enitities_from_board_and_add_to_hand_if_necessary(played, played.by_whom);
 
+    renounce_en_passant(played.board, played.by_whom);
+
     const doubled_pawns_exist = does_doubled_pawns_exist(played.board, played.by_whom);
     const is_your_king_alive = king_is_alive(played.board, played.by_whom);
     const is_opponents_king_alive = king_is_alive(played.board, opponentOf(played.by_whom));
@@ -83,18 +87,25 @@ export function resolve_after_stone_phase(played: StonePhasePlayed): ResolvedGam
     }
 }
 
+function renounce_en_passant(board: Board, by_whom: Side): void {
+    const opponent_pawn_coords = lookup_coords_from_side_and_prof(board, opponentOf(by_whom), "ポ");
+    for (const coord of opponent_pawn_coords) {
+        delete_en_passant_flag(board, coord);
+    }
+}
+
 function has_duplicates<T>(array: T[]): boolean {
     return new Set(array).size !== array.length;
 }
 
 function does_doubled_pawns_exist(board: Readonly<Board>, side: Side): boolean {
-    const coords = lookup_coord_from_side_and_prof(board, side, "ポ");
+    const coords = lookup_coords_from_side_and_prof(board, side, "ポ");
     const columns: ShogiColumnName[] = coords.map(([col, _row]) => col);
     return has_duplicates(columns);
 }
 
 function king_is_alive(board: Readonly<Board>, side: Side) {
-    return lookup_coord_from_side_and_prof(board, side, "キ").length + lookup_coord_from_side_and_prof(board, side, "超").length > 0;
+    return lookup_coords_from_side_and_prof(board, side, "キ").length + lookup_coords_from_side_and_prof(board, side, "超").length > 0;
 }
 
 function remove_surrounded_enitities_from_board_and_add_to_hand_if_necessary(old: StonePhasePlayed, side: Side): void {
@@ -117,4 +128,6 @@ function send_captured_entity_to_opponent(old: StonePhasePlayed, captured_entity
         (opponent === "白" ? old.hand_of_white : old.hand_of_black).push(unpromote(captured_entity.prof));
     }
 }
+
+
 

@@ -10,6 +10,21 @@ export function get_entity_from_coord(board: Readonly<Board>, coord: Coordinate)
     return (board[row_index]?.[column_index]) ?? null;
 }
 
+export function delete_en_passant_flag(board: Board, coord: Coordinate): void {
+    const [column, row] = coord;
+    const row_index = "一二三四五六七八九".indexOf(row);
+    const column_index = "９８７６５４３２１".indexOf(column);
+    if (row_index === -1 || column_index === -1) {
+        throw new Error(`座標「${displayCoord(coord)}」は不正です`)
+    }
+
+    const pawn = board[row_index]![column_index];
+    if (pawn?.type !== "ス" || pawn.prof !== "ポ") {
+        throw new Error(`ポーンのない座標「${displayCoord(coord)}」に対して \`delete_en_passant_flag()\` が呼ばれました`);
+    }
+    delete pawn.subject_to_en_passant;
+}
+
 /**
  * 駒・碁石・null を盤上の特定の位置に配置する。can_castle フラグと can_kumal フラグを適宜調整する。
  * @param board 
@@ -41,7 +56,7 @@ export function put_entity_at_coord_and_also_adjust_flags(board: Board, coord: C
     return board[row_index]![column_index] = maybe_entity;
 }
 
-export function lookup_coord_from_side_and_prof(board: Readonly<Board>, side: Side, prof: Profession): Coordinate[] {
+export function lookup_coords_from_side_and_prof(board: Readonly<Board>, side: Side, prof: Profession): Coordinate[] {
     const ans: Coordinate[] = [];
     const rows: ShogiRowName[] = ["一", "二", "三", "四", "五", "六", "七", "八", "九"];
     const cols: ShogiColumnName[] = ["１", "２", "３", "４", "５", "６", "７", "８", "９"];

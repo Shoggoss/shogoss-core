@@ -1,5 +1,5 @@
 import { get_initial_state } from "./index"
-import { get_entity_from_coord, lookup_coord_from_side_and_prof, put_entity_at_coord_and_also_adjust_flags } from "./board"
+import { get_entity_from_coord, lookup_coords_from_side_and_prof, put_entity_at_coord_and_also_adjust_flags } from "./board"
 import { ShogiColumnName, ShogiRowName } from "./coordinate";
 
 test('get_entity_from_coord_gold', () => {
@@ -19,12 +19,12 @@ test('get_entity_from_coord_gold', () => {
 
 test('get_entity_from_coord_throw', () => {
 	expect(() => get_entity_from_coord(get_initial_state("黒").board, ["ク" as ShogiColumnName, "トゥ" as ShogiRowName]))
-		.toThrow("座標「クトゥ」は不正です");
+		.toThrowError("座標「クトゥ」は不正です");
 });
 
 test('get_entity_from_coord_throw', () => {
 	expect(() => get_entity_from_coord(get_initial_state("黒").board, ["５", "百" as ShogiRowName]))
-		.toThrow("座標「５百」は不正です");
+		.toThrowError("座標「５百」は不正です");
 });
 
 test('get_entity_from_coord_throw', () => {
@@ -33,11 +33,11 @@ test('get_entity_from_coord_throw', () => {
 		["５", "百" as ShogiRowName],
 		{ type: "しょ", prof: "成桂", side: "黒", can_kumal: false }
 	))
-		.toThrow("座標「５百」は不正です");
+		.toThrowError("座標「５百」は不正です");
 });
 
 test('lookup_coord', () => {
-	expect(lookup_coord_from_side_and_prof(get_initial_state("黒").board, "黒", "ビ")).toEqual([
+	expect(lookup_coords_from_side_and_prof(get_initial_state("黒").board, "黒", "ビ")).toEqual([
 		["３", "八"],
 		["７", "八"],
 	])
