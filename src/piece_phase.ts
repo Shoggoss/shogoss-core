@@ -52,7 +52,7 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
                 throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}打とのことですが、${o.side}の手駒に${professionFullName(o.prof)}はありません`);
             }
         } else if (o.from === "右") {
-            const pruned = possible_points_of_origin.filter(from => is_reachable(old.board, { from, to: o.to }));
+            const pruned = possible_points_of_origin.filter(from => can_see(old.board, { from, to: o.to }));
             if (pruned.length === 0) {
                 throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}右とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}は盤上にありません`);
             }
@@ -63,7 +63,7 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
                 throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}が盤上に複数あります`);
             }
         } else if (o.from === "左") {
-            const pruned = possible_points_of_origin.filter(from => is_reachable(old.board, { from, to: o.to }));
+            const pruned = possible_points_of_origin.filter(from => can_see(old.board, { from, to: o.to }));
             if (pruned.length === 0) {
                 throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}左とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}は盤上にありません`);
             }
@@ -100,7 +100,7 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
         // Hence, when writing that move down, you don't want to explicitly annotate such a case with 直.
         // Therefore, when inferring the point of origin, I first ignore the doubled pawns.
 
-        const pruned = possible_points_of_origin.filter(from => is_reachable_and_not_doubled_pawns(old.board, { from, to: o.to }));
+        const pruned = possible_points_of_origin.filter(from => can_see_and_not_doubled_pawns(old.board, { from, to: o.to }));
 
         if (pruned.length === 0) {
             if (o.prof === "キ") {
@@ -132,7 +132,7 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
                     throw new Error("should not reach here")
                 }
             } else {
-                const pruned_allowing_doubled_pawns = possible_points_of_origin.filter(from => is_reachable(old.board, { from, to: o.to }));
+                const pruned_allowing_doubled_pawns = possible_points_of_origin.filter(from => can_see(old.board, { from, to: o.to }));
                 if (pruned_allowing_doubled_pawns.length === 0) {
                     throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}は盤上にありません`);
                 } else if (pruned_allowing_doubled_pawns.length === 1) {
@@ -153,7 +153,7 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
         if (!possible_points_of_origin.some(c => coordEq(c, from))) {
             throw new Error(`${o.side}が${displayCoord(from)}から${displayCoord(o.to)}へと${professionFullName(o.prof)}を動かそうとしていますが、${displayCoord(from)}には${o.side}の${professionFullName(o.prof)}はありません`);
         }
-        if (is_reachable(old.board, { from, to: o.to })) {
+        if (can_see(old.board, { from, to: o.to })) {
             return move_piece(old, { from, to: o.to, side: o.side, promote: o.promotes ?? null });
         } else {
             throw new Error(`${o.side}が${displayCoord(from)}から${displayCoord(o.to)}へと${professionFullName(o.prof)}を動かそうとしていますが、${professionFullName(o.prof)}は${displayCoord(from)}から${displayCoord(o.to)}へ動ける駒ではありません`);
@@ -287,12 +287,12 @@ function deltaEq(d: { v: number, h: number }, delta: { v: number, h: number }) {
 }
 
 /**
- * `o.from` に駒があってその駒が `o.to` へと利いているかどうかを返す。ポーンの斜め利きは常に reachable と見なす。 / Checks whether there is a piece at `o.from` which looks at `o.to`. The diagonal move of pawn is always considered.
+ * `o.from` に駒があってその駒が `o.to` へと利いているかどうかを返す。ポーンの斜め利きは常に can_see と見なす。 / Checks whether there is a piece at `o.from` which looks at `o.to`. The diagonal move of pawn is always considered.
  * @param board 
  * @param o 
  * @returns 
  */
-export function is_reachable(board: Readonly<Board>, o: { from: Coordinate, to: Coordinate }): boolean {
+export function can_see(board: Readonly<Board>, o: { from: Coordinate, to: Coordinate }): boolean {
     const p = get_entity_from_coord(board, o.from);
     if (!p) {
         return false;
@@ -420,8 +420,8 @@ function long_range(directions: { v: number, h: number }[], board: Readonly<Boar
     return true;
 }
 
-function is_reachable_and_not_doubled_pawns(board: Readonly<Board>, o: { from: Coordinate, to: Coordinate }): boolean {
-    if (!is_reachable(board, o)) {
+function can_see_and_not_doubled_pawns(board: Readonly<Board>, o: { from: Coordinate, to: Coordinate }): boolean {
+    if (!can_see(board, o)) {
         return false;
     }
 

@@ -1,23 +1,41 @@
-import { disambiguate_piece_phase_and_apply, is_reachable } from "./piece_phase"
+import { disambiguate_piece_phase_and_apply, can_see } from "./piece_phase"
 import { get_initial_state } from "./index"
 import { PiecePhasePlayed } from "./type";
 import { put_entity_at_coord_and_also_adjust_flags } from "./board";
 
-test('is_reachable_queen', () => {
-	expect(is_reachable(get_initial_state("白").board, { from: ["５", "八"], to: ["４", "八"] })).toBe(true);
+test('what the queen can see', () => {
+	expect(can_see(get_initial_state("白").board, { from: ["５", "八"], to: ["４", "八"] })).toBe(true);
 });
-test('is_reachable_gold', () => {
-	expect(is_reachable(get_initial_state("白").board, { from: ["４", "九"], to: ["４", "八"] })).toBe(true);
+test('what the gold can see', () => {
+	expect(can_see(get_initial_state("白").board, { from: ["４", "九"], to: ["４", "八"] })).toBe(true);
 });
-test('is_reachable_gold_overlapping', () => {
-	expect(is_reachable(get_initial_state("白").board, { from: ["４", "九"], to: ["３", "九"] })).toBe(true);
+test('gold can see an occupied square', () => {
+	expect(can_see(get_initial_state("白").board, { from: ["４", "九"], to: ["３", "九"] })).toBe(true);
 });
-test('is_reachable_silver', () => {
-	expect(is_reachable(get_initial_state("白").board, { from: ["３", "九"], to: ["４", "八"] })).toBe(true);
+test('what silver can see', () => {
+	expect(can_see(get_initial_state("白").board, { from: ["３", "九"], to: ["４", "八"] })).toBe(true);
 });
-test('is_reachable_silver_not', () => {
-	expect(is_reachable(get_initial_state("白").board, { from: ["３", "九"], to: ["４", "九"] })).toBe(false);
+test('what silver cannot see', () => {
+	expect(can_see(get_initial_state("白").board, { from: ["３", "九"], to: ["４", "九"] })).toBe(false);
 });
+
+test('what pawn can see', () => {
+	const state = get_initial_state("黒");
+
+	// 真ん中のポーンを破壊しておく
+	// destroy the pawn in the center rank
+	put_entity_at_coord_and_also_adjust_flags(state.board, ["５", "七"], null);
+
+	// 妨げがないので前に 1 歩でも 2 歩でも進める
+	// no obstruction; can move one or two steps forward
+	expect(can_see(state.board, { from: ["６", "七"], to: ["６", "六"] })).toBe(true);
+	expect(can_see(state.board, { from: ["６", "七"], to: ["６", "五"] })).toBe(true);
+
+	// see はポーンの斜め移動を常に含むものとする
+	// I declare that the concept of `see` always includes the diagonal movement
+	expect(can_see(state.board, { from: ["６", "七"], to: ["５", "六"] })).toBe(true);
+});
+
 test('fully specified', () => {
 	const knight_move: PiecePhasePlayed = disambiguate_piece_phase_and_apply(
 		get_initial_state("黒"), 
