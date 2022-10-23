@@ -1,4 +1,4 @@
-import { coordDiff, Coordinate, LeftmostWhenSeenFromBlack, RightmostWhenSeenFromBlack } from "./coordinate";
+import { coordDiff, Coordinate, LeftmostWhenSeenFromBlack, RightmostWhenSeenFromBlack, ShogiRowName } from "./coordinate";
 
 export type Side = "黒" | "白";
 export function opponentOf(side: Side): Side {
@@ -30,5 +30,14 @@ export function coordDiffSeenFrom(side: Side, o: { from: Coordinate, to: Coordin
     } else {
         const { h, v } = coordDiff(o);
         return { h: -h, v: -v };
+    }
+}
+
+export function is_within_nth_furthest_rows(n: number, side: Side, coord: Coordinate): boolean {
+    const row: ShogiRowName = coord[1];
+    if (side === "黒") {
+        return "一二三四五六七八九".indexOf(row) < n;
+    } else {
+        return "九八七六五四三二一".indexOf(row) < n;
     }
 }
