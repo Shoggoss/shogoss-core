@@ -1,5 +1,5 @@
 import { get_entity_from_coord, lookup_coord_from_side_and_prof, put_entity_at_coord_and_also_adjust_flags } from "./board";
-import { Board, coordDiffSeenFrom, invertSide, isShogiProfession, LeftmostWhenSeenFrom, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, RightmostWhenSeenFrom, ShogiProfession, Side } from "./type"
+import { Board, coordDiffSeenFrom, opponentOf, isShogiProfession, LeftmostWhenSeenFrom, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, RightmostWhenSeenFrom, ShogiProfession, Side } from "./type"
 import { coordEq, Coordinate, displayCoord, ShogiColumnName, ShogiRowName } from "./coordinate"
 
 /** 駒を打つ。手駒から将棋駒を盤上に移動させる。
@@ -172,7 +172,7 @@ function kumaling(old: ResolvedGameState, o: { from: Coordinate, to: Coordinate,
     } else if (king.type !== "王") {
         throw new Error(`キング王が${displayCoord(o.from)}から${displayCoord(o.to)}へ動くくまりんぐを${o.side}が試みていますが、${displayCoord(o.from)}にはキング王ではない駒があります`);
     } else if (king.side !== o.side) {
-        throw new Error(`キング王が${displayCoord(o.from)}から${displayCoord(o.to)}へ動くくまりんぐを${o.side}が試みていますが、${displayCoord(o.from)}にあるのは${invertSide(o.side)}のキング王です`);
+        throw new Error(`キング王が${displayCoord(o.from)}から${displayCoord(o.to)}へ動くくまりんぐを${o.side}が試みていますが、${displayCoord(o.from)}にあるのは${opponentOf(o.side)}のキング王です`);
     }
 
     const lance = get_entity_from_coord(old.board, o.to);
@@ -212,7 +212,7 @@ function move_piece(old: ResolvedGameState, o: { from: Coordinate, to: Coordinat
     } else if (piece_that_moves.type === "碁") {
         throw new Error(`${o.side}が${displayCoord(o.from)}から${displayCoord(o.to)}への移動を試みていますが、${displayCoord(o.from)}にあるのは碁石であり、駒ではありません`);
     } else if (piece_that_moves.side !== o.side) {
-        throw new Error(`${o.side}が${displayCoord(o.from)}から${displayCoord(o.to)}への移動を試みていますが、${displayCoord(o.from)}にあるのは${invertSide(o.side)}の駒です`);
+        throw new Error(`${o.side}が${displayCoord(o.from)}から${displayCoord(o.to)}への移動を試みていますが、${displayCoord(o.from)}にあるのは${opponentOf(o.side)}の駒です`);
     }
 
     if (o.promote) {

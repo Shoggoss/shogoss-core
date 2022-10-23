@@ -6,8 +6,12 @@ export type Phase = "piece_phase_played" | "stone_phase_played" | "resolved"
 export type GameState = ResolvedGameState | PiecePhasePlayed | StonePhasePlayed;
 export type GameEnd = {
     phase: "game_end",
-    victor: Side | "KarateRPSBoxing",
-    reason: "doubled_pawns" | "king_captured_by_stone" | "king_captured_by_piece" | "king_suicide"
+    victor: Side,
+    reason: "doubled_pawns" | "king_capture" | "king_suicide"
+} | {
+    phase: "game_end",
+    victor: "KarateJankenBoxing",
+    reason: "both_king_dead" | "king_capture_and_doubled_pawns"
 }
 export type ResolvedGameState = {
     phase: "resolved",
@@ -33,7 +37,7 @@ export type StonePhasePlayed = {
 export type Board = Tuple9<Row>;
 export type Row = Tuple9<Entity | null>;
 export type Side = "黒" | "白";
-export function invertSide(side: Side): Side {
+export function opponentOf(side: Side): Side {
     if (side === "黒") return "白";
     else return "黒";
 }
