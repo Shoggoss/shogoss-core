@@ -1,6 +1,6 @@
 import { main } from ".";
 
-test("hako3", () => {
+test("hakokanba3", () => {
 	expect(main([
 		{ "piece_phase": { "side": "黒", "to": ["７", "五"], "prof": "ポ" }, "stone_to": ["７", "四"] },
 		{ "piece_phase": { "side": "白", "to": ["３", "四"], "prof": "ナ" }, "stone_to": ["１", "四"] },
@@ -84,7 +84,7 @@ test("hako3", () => {
 	})
 
 });
-test("hako4", () => {
+test("hakokanba4", () => {
 
 	expect(main([
 		{ "piece_phase": { "side": "黒", "to": ["７", "五"], "prof": "ポ" }, "stone_to": ["７", "四"] },
@@ -171,7 +171,7 @@ test("hako4", () => {
 
 });
 
-test("hako9", () => {
+test("hakokanba9", () => {
 	expect(main([
 		{ "piece_phase": { "side": "黒", "to": ["７", "五"], "prof": "ポ" }, "stone_to": ["７", "四"] },
 		{ "piece_phase": { "side": "白", "to": ["３", "四"], "prof": "ナ" }, "stone_to": ["１", "四"] },
@@ -262,7 +262,7 @@ test("hako9", () => {
 });
 
 
-test("hako14", () => {
+test("hakokanba14", () => {
 	expect(main([
 		{ "piece_phase": { "side": "黒", "to": ["７", "五"], "prof": "ポ" }, "stone_to": ["７", "四"] },
 		{ "piece_phase": { "side": "白", "to": ["３", "四"], "prof": "ナ" }, "stone_to": ["１", "四"] },
@@ -357,7 +357,7 @@ test("hako14", () => {
 	})
 });
 
-test("hako22", () => {
+test("hakokanba22", () => {
 	expect(main([
 		{ "piece_phase": { "side": "黒", "to": ["７", "五"], "prof": "ポ" }, "stone_to": ["７", "四"] },
 		{ "piece_phase": { "side": "白", "to": ["３", "四"], "prof": "ナ" }, "stone_to": ["１", "四"] },
@@ -490,7 +490,7 @@ test("hako22", () => {
 	})
 });
 
-test("hako33", () => {
+test("hakokanba33", () => {
 	expect(main([
 		{ "piece_phase": { "side": "黒", "to": ["７", "五"], "prof": "ポ" }, "stone_to": ["７", "四"] },
 		{ "piece_phase": { "side": "白", "to": ["３", "四"], "prof": "ナ" }, "stone_to": ["１", "四"] },
@@ -633,3 +633,157 @@ test("hako33", () => {
 		]
 	})
 });
+
+test("hakokanba42", () => {
+	expect(main([
+		{ "piece_phase": { "side": "黒", "to": ["７", "五"], "prof": "ポ" }, "stone_to": ["７", "四"] },
+		{ "piece_phase": { "side": "白", "to": ["３", "四"], "prof": "ナ" }, "stone_to": ["１", "四"] },
+		{ "piece_phase": { "side": "黒", "to": ["６", "五"], "prof": "ポ" }, "stone_to": ["２", "五"] },
+		{ "piece_phase": { "side": "白", "to": ["１", "一"], "prof": "キ" }, "stone_to": ["１", "五"] },
+		{ "piece_phase": { "side": "黒", "to": ["４", "五"], "prof": "ポ" }, "stone_to": ["５", "六"] },
+		{ "piece_phase": { "side": "白", "to": ["４", "二"], "prof": "ナ" }, "stone_to": ["１", "六"] },
+		{ "piece_phase": { "side": "黒", "to": ["９", "五"], "prof": "ポ" }, "stone_to": ["２", "四"] },
+		{ "piece_phase": { "side": "白", "to": ["２", "二"], "prof": "銀" }, "stone_to": ["２", "六"] },
+		{ "piece_phase": { "side": "黒", "to": ["１", "六"], "prof": "ポ" }, "stone_to": ["３", "六"] },
+		{ "piece_phase": { "side": "白", "to": ["３", "一"], "prof": "金" }, "stone_to": ["３", "四"] },
+		{ "piece_phase": { "side": "黒", "to": ["１", "五"], "prof": "ポ" }, "stone_to": ["４", "四"] },
+		{ "piece_phase": { "side": "白", "to": ["４", "四"], "prof": "ポ" }, "stone_to": ["３", "五"] },
+		{ "piece_phase": { "side": "黒", "to": ["４", "四"], "prof": "ポ" }, "stone_to": ["４", "五"] },
+		{ "piece_phase": { "side": "白", "to": ["４", "四"], "prof": "ポ", "from": "左" }, "stone_to": ["３", "三"] },
+		{ "piece_phase": { "side": "黒", "to": ["６", "七"], "prof": "ビ" }, "stone_to": ["４", "六"] },
+		{ "piece_phase": { "side": "白", "to": ["６", "五"], "prof": "ビ" }, "stone_to": ["４", "一"] },
+		{ "piece_phase": { "side": "黒", "to": ["７", "八"], "prof": "銀" }, "stone_to": ["６", "六"] },
+		{ "piece_phase": { "side": "白", "to": ["７", "四"], "prof": "ポ" }, "stone_to": ["２", "六"] },
+		{ "piece_phase": { "side": "黒", "to": ["７", "四"], "prof": "ポ" }, "stone_to": ["１", "六"] },
+		{ "piece_phase": { "side": "白", "to": ["７", "四"], "prof": "ナ" }, "stone_to": ["４", "八"] },
+		{ "piece_phase": { "side": "黒", "to": ["８", "五"], "prof": "ポ" }, "stone_to": ["８", "七"] },
+		{ "piece_phase": { "side": "白", "to": ["５", "五"], "prof": "ポ" }, "stone_to": ["７", "七"] },
+		{ "piece_phase": { "side": "黒", "to": ["７", "七"], "prof": "桂" } },
+		{ "piece_phase": { "side": "白", "to": ["６", "四"], "prof": "ポ" }, "stone_to": ["７", "九"] },
+		{ "piece_phase": { "side": "黒", "to": ["６", "五"], "prof": "桂" }, "stone_to": ["５", "三"] },
+		{ "piece_phase": { "side": "白", "to": ["６", "五"], "prof": "ポ" }, "stone_to": ["７", "七"] },
+		{ "piece_phase": { "side": "黒", "to": ["２", "六"], "prof": "ポ" }, "stone_to": ["５", "四"] },
+		{ "piece_phase": { "side": "白", "to": ["６", "六"], "prof": "ポ" }, "stone_to": ["６", "五"] },
+		{ "piece_phase": { "side": "黒", "to": ["６", "六"], "prof": "ポ" }, "stone_to": ["６", "二"] },
+		{ "piece_phase": { "side": "白", "to": ["６", "六"], "prof": "ナ" }, "stone_to": ["９", "七"] },
+		{ "piece_phase": { "side": "黒", "to": ["６", "八"], "prof": "ク" }, "stone_to": ["４", "三"] },
+		{ "piece_phase": { "side": "白", "to": ["７", "八"], "prof": "ナ" }, "stone_to": ["８", "六"] },
+		{ "piece_phase": { "side": "黒", "to": ["７", "八"], "prof": "ビ" }, "stone_to": ["８", "九"] },
+		{ "piece_phase": { "side": "白", "to": ["５", "四"], "prof": "ナ" }, "stone_to": ["７", "六"] },
+		{ "piece_phase": { "side": "黒", "to": ["７", "六"], "prof": "ナ" }, "stone_to": ["４", "二"] },
+		{ "piece_phase": { "side": "白", "to": ["７", "五"], "prof": "ナ" }, "stone_to": ["６", "六"] },
+		{ "piece_phase": { "side": "黒", "to": ["４", "八"], "prof": "銀" }, "stone_to": ["７", "四"] },
+		{ "piece_phase": { "side": "白", "to": ["９", "四"], "prof": "ポ" }, "stone_to": ["２", "七"] },
+		{ "piece_phase": { "side": "黒", "to": ["９", "四"], "prof": "ポ" }, "stone_to": ["９", "三"] },
+		{ "piece_phase": { "side": "白", "to": ["９", "四"], "prof": "ナ" }, "stone_to": ["６", "七"] },
+		{ "piece_phase": { "side": "黒", "to": ["６", "七"], "prof": "ビ" }, "stone_to": ["５", "四"] },
+		{ "piece_phase": { "side": "白", "to": ["７", "五"], "prof": "ナ" }, "stone_to": ["８", "八"] },
+	])).toEqual({
+		phase: "resolved",
+		hand_of_black: [],
+		hand_of_white: ["桂", "銀"],
+		who_goes_next: "黒",
+		board: [
+			[
+				{ type: "しょ", side: "白", prof: "香", can_kumal: true },
+				{ type: "しょ", side: "白", prof: "桂", can_kumal: false },
+				{ type: "しょ", side: "白", prof: "銀", can_kumal: false },
+				{ type: "しょ", side: "白", prof: "金", can_kumal: false },
+				{ type: "しょ", side: "白", prof: "香", can_kumal: false },
+				{ type: "碁", side: "白" },
+				{ type: "しょ", side: "白", prof: "金", can_kumal: false },
+				{ type: "しょ", side: "白", prof: "桂", can_kumal: false },
+				{ type: "王", side: "白", prof: "キ", never_moved: false, has_moved_only_once: true },
+			],
+			[
+				{ type: "ス", side: "白", prof: "ル", never_moved: true },
+				null,
+				{ type: "ス", side: "白", prof: "ビ", never_moved: true },
+				{ type: "碁", side: "黒" },
+				{ type: "ス", side: "白", prof: "ク", never_moved: true },
+				{ type: "碁", side: "黒" },
+				null,
+				{ type: "しょ", side: "白", prof: "銀", can_kumal: false },
+				{ type: "ス", side: "白", prof: "ル", never_moved: true },
+			],
+			[
+				null,
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+				null,
+				null,
+				{ type: "碁", side: "黒" },
+				{ type: "碁", side: "黒" },
+				{ type: "碁", side: "白" },
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+			],
+			[
+				null,
+				null,
+				{ type: "碁", side: "黒" },
+				null,
+				{ type: "碁", side: "黒" },
+				{ type: "ス", side: "白", prof: "ポ", never_moved: false },
+				{ type: "碁", side: "白" },
+				{ type: "碁", side: "黒" },
+				{ type: "碁", side: "白" }
+			],
+			[
+				null,
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: false },
+				{ type: "ス", side: "白", prof: "ナ", never_moved: false },
+				{ type: "碁", side: "白" },
+				{ type: "ス", side: "白", prof: "ポ", never_moved: false },
+				{ type: "碁", side: "黒" },
+				{ type: "碁", side: "白" },
+				{ type: "碁", side: "黒" },
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: false }
+			],
+			[
+				null,
+				{ type: "碁", side: "白" },
+				null,
+				{ type: "碁", side: "白" },
+				{ type: "碁", side: "黒" },
+				{ type: "碁", side: "黒" },
+				{ type: "碁", side: "黒" },
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: false },
+				{ type: "碁", side: "黒" }
+			],
+			[
+				{ type: "碁", side: "白" },
+				null,
+				{ type: "碁", side: "白" },
+				{ type: "ス", side: "黒", prof: "ビ", never_moved: false},
+				null,
+				null,
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
+				{ type: "碁", side: "白" },
+				null,
+			],
+			[
+				{ type: "ス", side: "黒", prof: "ル", never_moved: true },
+				{ type: "碁", side: "白" },
+				null,
+				{ type: "ス", side: "黒", prof: "ク", never_moved: false },
+				null,
+				{ type: "しょ", side: "黒", prof: "銀", can_kumal: false },
+				{ type: "ス", side: "黒", prof: "ビ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ナ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ル", never_moved: true },
+			],
+			[
+				{ type: "しょ", side: "黒", prof: "香", can_kumal: true },
+				{ type: "碁", side: "黒" },
+				null,
+				{ type: "しょ", side: "黒", prof: "金", can_kumal: false },
+				{ type: "王", side: "黒", prof: "キ", never_moved: true, has_moved_only_once: false },
+				{ type: "しょ", side: "黒", prof: "金", can_kumal: false },
+				null,
+				{ type: "しょ", side: "黒", prof: "桂", can_kumal: false },
+				{ type: "しょ", side: "黒", prof: "香", can_kumal: true },
+			],
+		]
+	})
+});
+
