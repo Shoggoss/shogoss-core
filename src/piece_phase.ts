@@ -110,6 +110,8 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
                 const king = get_entity_from_coord(old.board, from);
                 if (king?.type === "王") {
                     if (king.never_moved) {
+                        // Invalid kumalings are rejected in the `kumaling` function.
+                        // Hence it's ok to call the function without checking anything.
                         return kumaling(old, { from, to: o.to, side: o.side });
                     } else if (king.has_moved_only_once) {
                         const diff = coordDiffSeenFrom(o.side, { to: o.to, from });
