@@ -1,5 +1,5 @@
 import { get_initial_state } from "./index"
-import { get_entity_from_coord, lookup_coord_from_side_and_prof, put_entity_at_coord_and_also_adjust_flags } from "./board"
+import { get_entity_from_coord, lookup_coords_from_side_and_prof, put_entity_at_coord_and_also_adjust_flags } from "./board"
 import { ShogiColumnName, ShogiRowName } from "./coordinate";
 
 test('get_entity_from_coord_gold', () => {
@@ -37,7 +37,7 @@ test('get_entity_from_coord_throw', () => {
 });
 
 test('lookup_coord', () => {
-	expect(lookup_coord_from_side_and_prof(get_initial_state("黒").board, "黒", "ビ")).toEqual([
+	expect(lookup_coords_from_side_and_prof(get_initial_state("黒").board, "黒", "ビ")).toEqual([
 		["３", "八"],
 		["７", "八"],
 	])

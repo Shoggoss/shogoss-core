@@ -1,4 +1,4 @@
-import { get_entity_from_coord, lookup_coord_from_side_and_prof, put_entity_at_coord_and_also_adjust_flags } from "./board";
+import { get_entity_from_coord, lookup_coords_from_side_and_prof, put_entity_at_coord_and_also_adjust_flags } from "./board";
 import { Board, coordDiffSeenFrom, opponentOf, isShogiProfession, LeftmostWhenSeenFrom, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, RightmostWhenSeenFrom, ShogiProfession, Side, unpromote } from "./type"
 import { coordEq, Coordinate, displayCoord, ShogiColumnName, ShogiRowName } from "./coordinate"
 
@@ -34,7 +34,7 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
 
     // first, use the `side` field and the `prof` field to list up the possible points of origin 
     // (note that "in hand" is a possibility).
-    const possible_points_of_origin = lookup_coord_from_side_and_prof(old.board, o.side, o.prof);
+    const possible_points_of_origin = lookup_coords_from_side_and_prof(old.board, o.side, o.prof);
     const hand = old[o.side === "白" ? "hand_of_white" : "hand_of_black"];
     const exists_in_hand: boolean = hand.some(prof => prof === o.prof);
 
@@ -231,6 +231,10 @@ function move_piece(old: ResolvedGameState, o: { from: Coordinate, to: Coordinat
 
     const occupier = get_entity_from_coord(old.board, o.to);
     if (!occupier) {
+        if (piece_that_moves.prof === "ポ" && piece_that_moves.never_moved && o.to[1] === "五") {
+            piece_that_moves.subject_to_en_passant = true;
+        }
+
         put_entity_at_coord_and_also_adjust_flags(old.board, o.to, piece_that_moves);
         put_entity_at_coord_and_also_adjust_flags(old.board, o.from, null);
         return {
@@ -483,7 +487,7 @@ function can_move_and_not_cause_doubled_pawns(board: Readonly<Board>, o: { from:
         if (o.from[0] === o.to[0]) { // no risk of doubled pawns when the pawn moves straight
             return true;
         } else {
-            const pawn_coords = lookup_coord_from_side_and_prof(board, piece.side, "ポ");
+            const pawn_coords = lookup_coords_from_side_and_prof(board, piece.side, "ポ");
             const problematic_pawns = pawn_coords.filter(([col, _row]) => col === o.to[0]);
 
             // if there are no problematic pawns, return true

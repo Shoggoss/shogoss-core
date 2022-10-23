@@ -45,7 +45,7 @@ test("hakokanba3", () => {
 				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
 			],
 			[null, null, { type: "碁", side: "黒" }, null, null, null, { type: "ス", side: "白", prof: "ナ", never_moved: false }, null, { type: "碁", side: "白" }],
-			[null, null, { type: "ス", side: "黒", prof: "ポ", never_moved: false }, { type: "ス", side: "黒", prof: "ポ", never_moved: false }, null, null, null, { type: "碁", side: "黒" }, null,],
+			[null, null, { type: "ス", side: "黒", prof: "ポ", never_moved: false }, { type: "ス", side: "黒", prof: "ポ", never_moved: false, subject_to_en_passant: true }, null, null, null, { type: "碁", side: "黒" }, null,],
 			[null, null, null, null, null, null, null, null, null,],
 			[
 				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
@@ -436,7 +436,7 @@ test("hakokanba22", () => {
 				{ type: "ス", side: "黒", prof: "ポ", never_moved: false }, 
 				null, 
 				{ type: "ス", side: "白", prof: "ビ", never_moved: false },
-				{ type: "ス", side: "白", prof: "ポ", never_moved: false },
+				{ type: "ス", side: "白", prof: "ポ", never_moved: false, subject_to_en_passant: true },
 				{ type: "碁", side: "黒" }, 
 				{ type: "碁", side: "白" }, 
 				{ type: "碁", side: "黒" }, 
