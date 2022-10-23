@@ -1,7 +1,7 @@
 import { coordDiff, Coordinate, LeftmostWhenSeenFromBlack, RightmostWhenSeenFromBlack } from "./coordinate";
 
 export type Tuple9<T> = [T, T, T, T, T, T, T, T, T];
-export type Hand = ShogiProfession[];
+export type Hand = UnpromotedShogiProfession[];
 export type Phase = "piece_phase_played" | "stone_phase_played" | "resolved"
 export type GameState = ResolvedGameState | PiecePhasePlayed | StonePhasePlayed;
 export type GameEnd = {
@@ -59,6 +59,13 @@ export type ShogiProfession =
     | "成桂" // promoted_shogi_knight
     | "成銀" // promoted_silver;
     ;
+
+export function unpromote(a: ShogiProfession): UnpromotedShogiProfession {
+    if (a === "成桂") return "桂";
+    if (a === "成銀") return "銀";
+    if (a === "成香") return "香";
+    return a;
+}
 
 export function professionFullName(a: Profession): string {
     if (a === "と") { return "とクィーン"; }

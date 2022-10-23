@@ -1,7 +1,7 @@
 import { lookup_coord_from_side_and_prof } from "./board";
 import { ShogiColumnName } from "./coordinate";
 import { remove_surrounded } from "./surround";
-import { Board, Entity, GameEnd, opponentOf, ResolvedGameState, Side, StonePhasePlayed } from "./type";
+import { Board, Entity, GameEnd, opponentOf, ResolvedGameState, Side, StonePhasePlayed, unpromote } from "./type";
 
 /** 石フェイズが終了した後、勝敗判定と囲碁検査をする。 / To be called after a stone is placed: checks the victory condition and the game-of-go condition.
  * 
@@ -108,7 +108,7 @@ function send_captured_entity_to_opponent(old: StonePhasePlayed, captured_entity
     if (!captured_entity) return;
     const opponent = opponentOf(captured_entity.side);
     if (captured_entity.type === "しょ") {
-        (opponent === "白" ? old.hand_of_white : old.hand_of_black).push(captured_entity.prof);
+        (opponent === "白" ? old.hand_of_white : old.hand_of_black).push(unpromote(captured_entity.prof));
     }
 }
 

@@ -1,5 +1,5 @@
 import { get_entity_from_coord, lookup_coord_from_side_and_prof, put_entity_at_coord_and_also_adjust_flags } from "./board";
-import { Board, coordDiffSeenFrom, opponentOf, isShogiProfession, LeftmostWhenSeenFrom, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, RightmostWhenSeenFrom, ShogiProfession, Side } from "./type"
+import { Board, coordDiffSeenFrom, opponentOf, isShogiProfession, LeftmostWhenSeenFrom, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, RightmostWhenSeenFrom, ShogiProfession, Side, unpromote } from "./type"
 import { coordEq, Coordinate, displayCoord, ShogiColumnName, ShogiRowName } from "./coordinate"
 
 /** 駒を打つ。手駒から将棋駒を盤上に移動させる。
@@ -258,7 +258,7 @@ function move_piece(old: ResolvedGameState, o: { from: Coordinate, to: Coordinat
         if (occupier.side === o.side) {
             throw new Error(`${o.side}が${displayCoord(o.from)}から${displayCoord(o.to)}への移動を試みていますが、${displayCoord(o.to)}に自分の駒があるので、移動できません`);
         } else if (occupier.type === "しょ") {
-            (o.side === "白" ? old.hand_of_white : old.hand_of_black).push(occupier.prof);
+            (o.side === "白" ? old.hand_of_white : old.hand_of_black).push(unpromote(occupier.prof));
             put_entity_at_coord_and_also_adjust_flags(old.board, o.to, piece_that_moves);
             put_entity_at_coord_and_also_adjust_flags(old.board, o.from, null);
             return {
