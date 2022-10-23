@@ -1,8 +1,8 @@
-import { coordDiffSeenFrom, invertSide } from "./type";
+import { coordDiffSeenFrom, opponentOf } from "./type";
 
 test("invertSide", () => {
-	expect(invertSide("白")).toBe("黒");
-	expect(invertSide("黒")).toBe("白");
+	expect(opponentOf("白")).toBe("黒");
+	expect(opponentOf("黒")).toBe("白");
 })
 
 test('coordDiffSeenFrom', () => {
