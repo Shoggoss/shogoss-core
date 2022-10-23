@@ -52,7 +52,7 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
                 throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}打とのことですが、${o.side}の手駒に${professionFullName(o.prof)}はありません`);
             }
         } else if (o.from === "右") {
-            const pruned = possible_points_of_origin.filter(from => can_see(old.board, { from, to: o.to }));
+            const pruned = possible_points_of_origin.filter(from => can_move(old.board, { from, to: o.to }));
             if (pruned.length === 0) {
                 throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}右とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}は盤上にありません`);
             }
@@ -63,7 +63,7 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
                 throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}が盤上に複数あります`);
             }
         } else if (o.from === "左") {
-            const pruned = possible_points_of_origin.filter(from => can_see(old.board, { from, to: o.to }));
+            const pruned = possible_points_of_origin.filter(from => can_move(old.board, { from, to: o.to }));
             if (pruned.length === 0) {
                 throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}左とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}は盤上にありません`);
             }
@@ -100,7 +100,7 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
         // Hence, when writing that move down, you don't want to explicitly annotate such a case with 直.
         // Therefore, when inferring the point of origin, I first ignore the doubled pawns.
 
-        const pruned = possible_points_of_origin.filter(from => can_see_and_not_doubled_pawns(old.board, { from, to: o.to }));
+        const pruned = possible_points_of_origin.filter(from => can_move_and_not_cause_doubled_pawns(old.board, { from, to: o.to }));
 
         if (pruned.length === 0) {
             if (o.prof === "キ") {
@@ -132,7 +132,7 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
                     throw new Error("should not reach here")
                 }
             } else {
-                const pruned_allowing_doubled_pawns = possible_points_of_origin.filter(from => can_see(old.board, { from, to: o.to }));
+                const pruned_allowing_doubled_pawns = possible_points_of_origin.filter(from => can_move(old.board, { from, to: o.to }));
                 if (pruned_allowing_doubled_pawns.length === 0) {
                     throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}は盤上にありません`);
                 } else if (pruned_allowing_doubled_pawns.length === 1) {
@@ -153,7 +153,7 @@ export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Re
         if (!possible_points_of_origin.some(c => coordEq(c, from))) {
             throw new Error(`${o.side}が${displayCoord(from)}から${displayCoord(o.to)}へと${professionFullName(o.prof)}を動かそうとしていますが、${displayCoord(from)}には${o.side}の${professionFullName(o.prof)}はありません`);
         }
-        if (can_see(old.board, { from, to: o.to })) {
+        if (can_move(old.board, { from, to: o.to })) {
             return move_piece(old, { from, to: o.to, side: o.side, promote: o.promotes ?? null });
         } else {
             throw new Error(`${o.side}が${displayCoord(from)}から${displayCoord(o.to)}へと${professionFullName(o.prof)}を動かそうとしていますが、${professionFullName(o.prof)}は${displayCoord(from)}から${displayCoord(o.to)}へ動ける駒ではありません`);
@@ -287,7 +287,69 @@ function deltaEq(d: { v: number, h: number }, delta: { v: number, h: number }) {
 }
 
 /**
- * `o.from` に駒があってその駒が `o.to` へと利いているかどうかを返す。ポーンの斜め利きは常に can_see と見なす。 / Checks whether there is a piece at `o.from` which looks at `o.to`. The diagonal move of pawn is always considered.
+ * `o.from` に駒があってその駒が `o.to` へと動く余地があるかどうかを返す。`o.to` が味方の駒で埋まっていたら false だし、ポーンの斜め前に敵駒がないなら斜め前は false となる。
+ *  Checks whether there is a piece at `o.from` which can move to `o.to`. When `o.to` is occupied by an ally, this function returns false, 
+ *  and when there is no enemy piece diagonal to pawn, this function returns false for the diagonal direction.
+ * @param board 
+ * @param o 
+ * @returns 
+ */
+export function can_move(board: Readonly<Board>, o: { from: Coordinate, to: Coordinate }): boolean {
+    const p = get_entity_from_coord(board, o.from);
+    if (!p) {
+        return false;
+    }
+    if (p.type === "碁") {
+        return false;
+    }
+    const piece_at_destination = get_entity_from_coord(board, o.to);
+    if (piece_at_destination?.side === p.side) {
+        return false;
+    }
+
+    if (p.prof !== "ポ") {
+        return can_see(board, o);
+    }
+
+    const delta = coordDiffSeenFrom(p.side, o);
+
+    // can always move forward
+    if (delta.v === 1 && delta.h === 0) {
+        return true;
+    }
+
+    // can take diagonally, as long as an opponent's piece is located there, or when it is an en passant
+    if (delta.v === 1 && (delta.h === 1 || delta.h === -1)) {
+        if (piece_at_destination?.side === opponentOf(p.side)) {
+            return true;
+        } else {
+            const coord_horizontally_adjacent = applyDeltaSeenFrom(p.side, o.from, { v: 0, h: delta.h });
+            const piece_horizontally_adjacent = get_entity_from_coord(board, coord_horizontally_adjacent);
+            if (o.from[1] === "五" && piece_horizontally_adjacent?.type === "ス" && piece_horizontally_adjacent.prof === "ポ") {
+                throw new Error("possibility of en passant; not implemented");
+            } else {
+                return false;
+            }
+        } 
+    }
+
+    if (p.never_moved && delta.v === 2 && delta.h === 0) {
+        // can move two in the front, unless blocked
+        const coord_in_front = applyDeltaSeenFrom(p.side, o.from, { v: 1, h: 0 });
+        const coord_two_in_front = applyDeltaSeenFrom(p.side, o.from, { v: 2, h: 0 });
+        if (get_entity_from_coord(board, coord_in_front)
+            || get_entity_from_coord(board, coord_two_in_front)) {
+            return false;
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+
+/**
+ * `o.from` に駒があってその駒が `o.to` へと利いているかどうかを返す。ポーンの斜め利きは常に can_see と見なす。ポーンの2マス移動は、駒を取ることができないので「利き」ではない。
+ *  Checks whether there is a piece at `o.from` which looks at `o.to`. The diagonal move of pawn is always considered. A pawn never sees two squares in the front; it can only move to there.
  * @param board 
  * @param o 
  * @returns 
@@ -352,17 +414,8 @@ export function can_see(board: Readonly<Board>, o: { from: Coordinate, to: Coord
     } else if (p.prof === "ポ") {
         if ([{ v: 1, h: -1 }, { v: 1, h: 0 }, { v: 1, h: 1 }].some(d => deltaEq(d, delta))) {
             return true;
-        }
-        if (p.never_moved && delta.v === 2 && delta.h === 0) {
-            // can move two in the front, unless blocked
-            const coord_in_front = applyDeltaSeenFrom(p.side, o.from, { v: 1, h: 0 });
-            const coord_two_in_front = applyDeltaSeenFrom(p.side, o.from, { v: 2, h: 0 });
-            if (get_entity_from_coord(board, coord_in_front)
-                || get_entity_from_coord(board, coord_two_in_front)) {
-                return false;
-            }
-            return true;
         } else {
+            // a pawn can never see two squares in front; it can only move to there
             return false;
         }
     } else {
@@ -420,8 +473,8 @@ function long_range(directions: { v: number, h: number }[], board: Readonly<Boar
     return true;
 }
 
-function can_see_and_not_doubled_pawns(board: Readonly<Board>, o: { from: Coordinate, to: Coordinate }): boolean {
-    if (!can_see(board, o)) {
+function can_move_and_not_cause_doubled_pawns(board: Readonly<Board>, o: { from: Coordinate, to: Coordinate }): boolean {
+    if (!can_move(board, o)) {
         return false;
     }
 

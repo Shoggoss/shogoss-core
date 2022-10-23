@@ -1,4 +1,4 @@
-import { disambiguate_piece_phase_and_apply, can_see } from "./piece_phase"
+import { disambiguate_piece_phase_and_apply, can_see, can_move } from "./piece_phase"
 import { get_initial_state } from "./index"
 import { PiecePhasePlayed } from "./type";
 import { put_entity_at_coord_and_also_adjust_flags } from "./board";
@@ -19,21 +19,30 @@ test('what silver cannot see', () => {
 	expect(can_see(get_initial_state("白").board, { from: ["３", "九"], to: ["４", "九"] })).toBe(false);
 });
 
-test('what pawn can see', () => {
+test('what pawn can see / how a pawn can move', () => {
 	const state = get_initial_state("黒");
 
 	// 真ん中のポーンを破壊しておく
 	// destroy the pawn in the center rank
 	put_entity_at_coord_and_also_adjust_flags(state.board, ["５", "七"], null);
 
-	// 妨げがないので前に 1 歩でも 2 歩でも進める
-	// no obstruction; can move one or two steps forward
+	// ポーンの「利き」は 2 マス前進を含まない
+	// cannot see two squares in front
 	expect(can_see(state.board, { from: ["６", "七"], to: ["６", "六"] })).toBe(true);
-	expect(can_see(state.board, { from: ["６", "七"], to: ["６", "五"] })).toBe(true);
+	expect(can_see(state.board, { from: ["６", "七"], to: ["６", "五"] })).toBe(false);
 
-	// see はポーンの斜め移動を常に含むものとする
-	// I declare that the concept of `see` always includes the diagonal movement
+	// 妨げがないので、前に 1 歩でも 2 歩でも進める
+	// no obstruction; can move one or two steps forward
+	expect(can_move(state.board, { from: ["６", "七"], to: ["６", "六"] })).toBe(true);
+	expect(can_move(state.board, { from: ["６", "七"], to: ["６", "五"] })).toBe(true);
+
+	// 「利き」はポーンの斜め移動を常に含むものとする
+	// the concept of `see` always includes the diagonal movement
 	expect(can_see(state.board, { from: ["６", "七"], to: ["５", "六"] })).toBe(true);
+
+	// しかし、行き先に駒がないので、移動することはできない
+	// however, there is no piece at the destination, and therefore cannot actually go there
+	expect(can_move(state.board, { from: ["６", "七"], to: ["５", "六"] })).toBe(false);
 });
 
 test('fully specified', () => {
