@@ -282,7 +282,7 @@ function move_piece(old: ResolvedGameState, o: { from: Coordinate, to: Coordinat
 
     if (is_promotable(piece_that_moves.prof)
         && (is_within_nth_furthest_rows(3, o.side, o.from) || is_within_nth_furthest_rows(3, o.side, o.to))
-       ) {
+    ) {
         if (o.promote) {
             if (piece_that_moves.prof === "桂") {
                 piece_that_moves.prof = "成桂";
@@ -294,6 +294,12 @@ function move_piece(old: ResolvedGameState, o: { from: Coordinate, to: Coordinat
                 piece_that_moves.prof = "超";
             } else if (piece_that_moves.prof === "ポ") {
                 piece_that_moves.prof = "と";
+            }
+        } else {
+            if ((piece_that_moves.prof === "桂" && is_within_nth_furthest_rows(2, o.side, o.to))
+                || (piece_that_moves.prof === "香" && is_within_nth_furthest_rows(1, o.side, o.to))
+            ) {
+                throw new Error(`${o.side}が${displayCoord(o.to)}${piece_that_moves.prof}不成とのことですが、${professionFullName(piece_that_moves.prof)}を不成で行きどころのないところに行かせることはできません`)
             }
         }
     } else {
