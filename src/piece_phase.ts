@@ -1,6 +1,6 @@
 import { get_entity_from_coord, lookup_coords_from_side_and_prof, put_entity_at_coord_and_also_adjust_flags } from "./board";
 import { Board, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, unpromote, UnpromotedShogiProfession, isUnpromotedShogiProfession, is_promotable } from "./type"
-import { columnsBetween,  coordEq, Coordinate, displayCoord, ShogiColumnName } from "./coordinate"
+import { columnsBetween, coordEq, Coordinate, displayCoord, ShogiColumnName } from "./coordinate"
 import { Side, coordDiffSeenFrom, RightmostWhenSeenFrom, LeftmostWhenSeenFrom, opponentOf, is_within_nth_furthest_rows, applyDeltaSeenFrom } from "./side";
 import { can_see, do_any_of_my_pieces_see } from "./can_see";
 
@@ -30,6 +30,49 @@ function parachute(old: ResolvedGameState, o: { side: Side, prof: UnpromotedShog
         hand_of_white: old.hand_of_white,
         by_whom: old.who_goes_next,
         board: old.board
+    }
+}
+
+function kumaling2(old: ResolvedGameState, from: Coordinate, to: Coordinate): PiecePhasePlayed {
+    const king = get_entity_from_coord(old.board, from);
+    if (king?.type === "王") {
+        if (king.never_moved) {
+            const lance = get_entity_from_coord(old.board, to);
+            if (!lance) {
+                throw new Error(`キング王が${displayCoord(from)}から${displayCoord(to)}へ動くくまりんぐを${king.side}が試みていますが、${displayCoord(to)}には駒がありません`);
+            } else if (lance.type === "碁") {
+                throw new Error(`キング王が${displayCoord(from)}から${displayCoord(to)}へ動くくまりんぐを${king.side}が試みていますが、${displayCoord(to)}にあるのは香車ではなく碁石です`)
+            } else if (lance.type !== "しょ" || lance.prof !== "香") {
+                throw new Error(`キング王が${displayCoord(from)}から${displayCoord(to)}へ動くくまりんぐを${king.side}が試みていますが、${displayCoord(from)}には香車ではない駒があります`);
+            }
+
+            if (lance.can_kumal) {
+                put_entity_at_coord_and_also_adjust_flags(old.board, to, king);
+                put_entity_at_coord_and_also_adjust_flags(old.board, from, lance);
+                return {
+                    phase: "piece_phase_played",
+                    board: old.board,
+                    hand_of_black: old.hand_of_black,
+                    hand_of_white: old.hand_of_white,
+                    by_whom: old.who_goes_next
+                }
+            } else {
+                throw new Error(`キング王が${displayCoord(from)}から${displayCoord(to)}へ動くくまりんぐを${king.side}が試みていますが、この香車は打たれた香車なのでくまりんぐの対象外です`);
+            }
+        } else if (king.has_moved_only_once) {
+            const diff = coordDiffSeenFrom(king.side, { to: to, from });
+            if (diff.v === 0 && (diff.h === 2 || diff.h === -2) &&
+                ((king.side === "黒" && from[1] === "八") || (king.side === "白" && from[1] === "二"))
+            ) {
+                return castling(old, { from, to: to, side: king.side });
+            } else {
+                throw new Error(`${king.side}が${displayCoord(to)}キとのことですが、そのような移動ができる${king.side}の${professionFullName("キ")}は盤上にありません`);
+            }
+        } else {
+            throw new Error(`${king.side}が${displayCoord(to)}キとのことですが、そのような移動ができる${king.side}の${professionFullName("キ")}は盤上にありません`);
+        }
+    } else {
+        throw new Error(`function \`kumaling2()\` called on a non-king piece`);
     }
 }
 
@@ -117,29 +160,7 @@ export function play_piece_phase(old: ResolvedGameState, o: Readonly<PiecePhaseM
             if (o.prof === "キ") {
                 // キャスリングおよびくまりんぐはキング王の動きとして書く。
                 // 常にキングが通常動けない範囲への移動となる。
-                const from = possible_points_of_origin[0]!;
-                const king = get_entity_from_coord(old.board, from);
-                if (king?.type === "王") {
-                    if (king.never_moved) {
-                        // Invalid kumalings are rejected in the `kumaling` function.
-                        // Hence it's ok to call the function without checking anything.
-                        return kumaling(old, { from, to: o.to, side: o.side });
-                    } else if (king.has_moved_only_once) {
-                        const diff = coordDiffSeenFrom(o.side, { to: o.to, from });
-                        if (diff.v === 0 && (diff.h === 2 || diff.h === -2) &&
-                            ((o.side === "黒" && from[1] === "八") || (o.side === "白" && from[1] === "二"))
-                        ) {
-                            return castling(old, { from, to: o.to, side: o.side });
-                        } else {
-                            throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}は盤上にありません`);
-                        }
-                    } else {
-                        throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}は盤上にありません`);
-                    }
-                } else {
-                    throw new Error("should not reach here")
-                }
-
+                return kumaling2(old, possible_points_of_origin[0]!, o.to);
             } else if (exists_in_hand) {
                 if (isUnpromotedShogiProfession(o.prof)) {
                     return parachute(old, { side: o.side, prof: o.prof, to: o.to });
@@ -175,72 +196,10 @@ export function play_piece_phase(old: ResolvedGameState, o: Readonly<PiecePhaseM
         } else if (o.prof === "キ") {
             // キャスリングおよびくまりんぐはキング王の動きとして書く。
             // 常にキングが通常動けない範囲への移動となる。
-            const king = get_entity_from_coord(old.board, from);
-            if (king?.type === "王") {
-                if (king.never_moved) {
-                    // Invalid kumalings are rejected in the `kumaling` function.
-                    // Hence it's ok to call the function without checking anything.
-                    return kumaling(old, { from, to: o.to, side: o.side });
-                } else if (king.has_moved_only_once) {
-                    const diff = coordDiffSeenFrom(o.side, { to: o.to, from });
-                    if (diff.v === 0 && (diff.h === 2 || diff.h === -2) &&
-                        ((o.side === "黒" && from[1] === "八") || (o.side === "白" && from[1] === "二"))
-                    ) {
-                        return castling(old, { from, to: o.to, side: o.side });
-                    } else {
-                        throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}は盤上にありません`);
-                    }
-                } else {
-                    throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}は盤上にありません`);
-                }
-            } else {
-                throw new Error("should not reach here")
-            }
+            return kumaling2(old, from, o.to);
         } else {
             throw new Error(`${o.side}が${displayCoord(from)}から${displayCoord(o.to)}へと${professionFullName(o.prof)}を動かそうとしていますが、${professionFullName(o.prof)}は${displayCoord(from)}から${displayCoord(o.to)}へ動ける駒ではありません`);
         }
-    }
-}
-
-/** くまりんぐ 
- */
-function kumaling(old: ResolvedGameState, o: { from: Coordinate, to: Coordinate, side: Side }): PiecePhasePlayed {
-    const king = get_entity_from_coord(old.board, o.from);
-    if (!king) {
-        throw new Error(`キング王が${displayCoord(o.from)}から${displayCoord(o.to)}へ動くくまりんぐを${o.side}が試みていますが、${displayCoord(o.from)}には駒がありません`);
-    } else if (king.type === "碁") {
-        throw new Error(`キング王が${displayCoord(o.from)}から${displayCoord(o.to)}へ動くくまりんぐを${o.side}が試みていますが、${displayCoord(o.from)}にあるのはキング王ではなく碁石です`);
-    } else if (king.type !== "王") {
-        throw new Error(`キング王が${displayCoord(o.from)}から${displayCoord(o.to)}へ動くくまりんぐを${o.side}が試みていますが、${displayCoord(o.from)}にはキング王ではない駒があります`);
-    } else if (king.side !== o.side) {
-        throw new Error(`キング王が${displayCoord(o.from)}から${displayCoord(o.to)}へ動くくまりんぐを${o.side}が試みていますが、${displayCoord(o.from)}にあるのは${opponentOf(o.side)}のキング王です`);
-    }
-
-    const lance = get_entity_from_coord(old.board, o.to);
-    if (!lance) {
-        throw new Error(`キング王が${displayCoord(o.from)}から${displayCoord(o.to)}へ動くくまりんぐを${o.side}が試みていますが、${displayCoord(o.to)}には駒がありません`);
-    } else if (lance.type === "碁") {
-        throw new Error(`キング王が${displayCoord(o.from)}から${displayCoord(o.to)}へ動くくまりんぐを${o.side}が試みていますが、${displayCoord(o.to)}にあるのは香車ではなく碁石です`)
-    } else if (lance.type !== "しょ" || lance.prof !== "香") {
-        throw new Error(`キング王が${displayCoord(o.from)}から${displayCoord(o.to)}へ動くくまりんぐを${o.side}が試みていますが、${displayCoord(o.from)}には香車ではない駒があります`);
-    }
-
-    if (king.never_moved) {
-        if (lance.can_kumal) {
-            put_entity_at_coord_and_also_adjust_flags(old.board, o.to, king);
-            put_entity_at_coord_and_also_adjust_flags(old.board, o.from, lance);
-            return {
-                phase: "piece_phase_played",
-                board: old.board,
-                hand_of_black: old.hand_of_black,
-                hand_of_white: old.hand_of_white,
-                by_whom: old.who_goes_next
-            }
-        } else {
-            throw new Error(`キング王が${displayCoord(o.from)}から${displayCoord(o.to)}へ動くくまりんぐを${o.side}が試みていますが、この香車は打たれた香車なのでくまりんぐの対象外です`);
-        }
-    } else {
-        throw new Error(`キング王が${displayCoord(o.from)}から${displayCoord(o.to)}へ動くくまりんぐを${o.side}が試みていますが、このキング王は過去に動いたことがあるのでくまりんぐの対象外です`);
     }
 }
 
