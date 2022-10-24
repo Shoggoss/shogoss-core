@@ -77,3 +77,22 @@ export function lookup_coords_from_side_and_prof(board: Readonly<Board>, side: S
     return ans;
 }
 
+export function lookup_coords_from_side(board: Readonly<Board>, side: Side): Coordinate[] {
+    const ans: Coordinate[] = [];
+    const rows: ShogiRowName[] = ["一", "二", "三", "四", "五", "六", "七", "八", "九"];
+    const cols: ShogiColumnName[] = ["１", "２", "３", "４", "５", "６", "７", "８", "９"];
+    for (const row of rows) {
+        for (const col of cols) {
+            const coord: Coordinate = [col, row];
+            const entity = get_entity_from_coord(board, coord);
+            if (entity === null || entity.type === "碁") {
+                continue;
+            } else if (entity.side === side) {
+                ans.push(coord)
+            } else {
+                continue;
+            }
+        }
+    }
+    return ans;
+}

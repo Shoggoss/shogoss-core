@@ -10,6 +10,18 @@ export function coordEq([col1, row1]: Coordinate, [col2, row2]: Coordinate) {
 	return col1 === col2 && row1 === row2;
 }
 
+export function columnsBetween(a: ShogiColumnName, b: ShogiColumnName): ShogiColumnName[] {
+	const a_index = "９８７６５４３２１".indexOf(a);
+	const b_index = "９８７６５４３２１".indexOf(b);
+	if (a_index >= b_index) return columnsBetween(b, a);
+
+	const ans: ShogiColumnName[] = [];
+	for (let i = a_index + 1; i < b_index; i++) {
+		ans.push("９８７６５４３２１"[i] as ShogiColumnName);
+	}
+	return ans;
+}
+
 export function coordDiff(o: { from: Coordinate, to: Coordinate }) {
 	const [from_column, from_row] = o.from;
 	const from_row_index = "一二三四五六七八九".indexOf(from_row);
@@ -19,9 +31,9 @@ export function coordDiff(o: { from: Coordinate, to: Coordinate }) {
 	const to_row_index = "一二三四五六七八九".indexOf(to_row);
 	const to_column_index = "９８７６５４３２１".indexOf(to_column);
 
-	return { 
-		h: to_column_index - from_column_index, 
-		v: to_row_index - from_row_index 
+	return {
+		h: to_column_index - from_column_index,
+		v: to_row_index - from_row_index
 	};
 }
 
