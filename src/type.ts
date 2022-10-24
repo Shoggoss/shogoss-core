@@ -80,6 +80,10 @@ export function professionFullName(a: Profession): string {
     else if (a === "ポ") { return "ポーン兵"; }
     else if (a === "ル") { return "ルーク"; }
     else if (a === "超") { return "スーパーキング王"; }
+    else if (a === "桂") { return "桂馬"; }
+    else if (a === "香") { return "香車"; }
+    else if (a === "銀") { return "銀将"; }
+    else if (a === "金") { return "金将"; }
     else { return a; }
 }
 

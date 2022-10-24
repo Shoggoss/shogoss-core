@@ -1,23 +1,8 @@
-import { disambiguate_piece_phase_and_apply, can_see, can_move } from "./piece_phase"
+import { disambiguate_piece_phase_and_apply, can_move } from "./piece_phase"
 import { get_initial_state } from "./index"
 import { PiecePhasePlayed } from "./type";
 import { put_entity_at_coord_and_also_adjust_flags } from "./board";
-
-test('what the queen can see', () => {
-	expect(can_see(get_initial_state("白").board, { from: ["５", "八"], to: ["４", "八"] })).toBe(true);
-});
-test('what the gold can see', () => {
-	expect(can_see(get_initial_state("白").board, { from: ["４", "九"], to: ["４", "八"] })).toBe(true);
-});
-test('gold can see an occupied square', () => {
-	expect(can_see(get_initial_state("白").board, { from: ["４", "九"], to: ["３", "九"] })).toBe(true);
-});
-test('what silver can see', () => {
-	expect(can_see(get_initial_state("白").board, { from: ["３", "九"], to: ["４", "八"] })).toBe(true);
-});
-test('what silver cannot see', () => {
-	expect(can_see(get_initial_state("白").board, { from: ["３", "九"], to: ["４", "九"] })).toBe(false);
-});
+import { can_see } from "./can_see";
 
 test('what pawn can see / how a pawn can move', () => {
 	const state = get_initial_state("黒");

@@ -1,7 +1,8 @@
 import { get_entity_from_coord, lookup_coords_from_side, lookup_coords_from_side_and_prof, put_entity_at_coord_and_also_adjust_flags } from "./board";
 import { Board, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, unpromote, UnpromotedShogiProfession, isUnpromotedShogiProfession, is_promotable } from "./type"
 import { columnsBetween, coordDiff, coordEq, Coordinate, displayCoord, ShogiColumnName, ShogiRowName } from "./coordinate"
-import { Side, coordDiffSeenFrom, RightmostWhenSeenFrom, LeftmostWhenSeenFrom, opponentOf, is_within_nth_furthest_rows } from "./side";
+import { Side, coordDiffSeenFrom, RightmostWhenSeenFrom, LeftmostWhenSeenFrom, opponentOf, is_within_nth_furthest_rows, applyDeltaSeenFrom } from "./side";
+import { can_see, do_any_of_my_pieces_see } from "./can_see";
 
 /** 駒を打つ。手駒から将棋駒を盤上に移動させる。行きどころの無い位置に桂馬と香車を打ったらエラー。
  * 
@@ -282,17 +283,25 @@ function move_piece(old: ResolvedGameState, o: { from: Coordinate, to: Coordinat
 
     if (is_promotable(piece_that_moves.prof)
         && (is_within_nth_furthest_rows(3, o.side, o.from) || is_within_nth_furthest_rows(3, o.side, o.to))
-        && o.promote) {
-        if (piece_that_moves.prof === "桂") {
-            piece_that_moves.prof = "成桂";
-        } else if (piece_that_moves.prof === "銀") {
-            piece_that_moves.prof = "成銀";
-        } else if (piece_that_moves.prof === "香") {
-            piece_that_moves.prof = "成香";
-        } else if (piece_that_moves.prof === "キ") {
-            piece_that_moves.prof = "超";
-        } else if (piece_that_moves.prof === "ポ") {
-            piece_that_moves.prof = "と";
+    ) {
+        if (o.promote) {
+            if (piece_that_moves.prof === "桂") {
+                piece_that_moves.prof = "成桂";
+            } else if (piece_that_moves.prof === "銀") {
+                piece_that_moves.prof = "成銀";
+            } else if (piece_that_moves.prof === "香") {
+                piece_that_moves.prof = "成香";
+            } else if (piece_that_moves.prof === "キ") {
+                piece_that_moves.prof = "超";
+            } else if (piece_that_moves.prof === "ポ") {
+                piece_that_moves.prof = "と";
+            }
+        } else {
+            if ((piece_that_moves.prof === "桂" && is_within_nth_furthest_rows(2, o.side, o.to))
+                || (piece_that_moves.prof === "香" && is_within_nth_furthest_rows(1, o.side, o.to))
+            ) {
+                throw new Error(`${o.side}が${displayCoord(o.to)}${piece_that_moves.prof}不成とのことですが、${professionFullName(piece_that_moves.prof)}を不成で行きどころのないところに行かせることはできません`)
+            }
         }
     } else {
         if (o.promote !== null) {
@@ -358,10 +367,6 @@ function move_piece(old: ResolvedGameState, o: { from: Coordinate, to: Coordinat
     }
 }
 
-function deltaEq(d: { v: number, h: number }, delta: { v: number, h: number }) {
-    return d.v === delta.v && d.h === delta.h;
-}
-
 /**
  * `o.from` に駒があってその駒が `o.to` へと動く余地があるかどうかを返す。`o.to` が味方の駒で埋まっていたら false だし、ポーンの斜め前に敵駒がないなら斜め前は false となる。
  *  Checks whether there is a piece at `o.from` which can move to `o.to`. When `o.to` is occupied by an ally, this function returns false, 
@@ -424,132 +429,6 @@ export function can_move(board: Readonly<Board>, o: { from: Coordinate, to: Coor
     } else {
         return false;
     }
-}
-
-/**
- * `o.from` に駒があってその駒が `o.to` へと利いているかどうかを返す。ポーンの斜め利きは常に can_see と見なす。ポーンの2マス移動は、駒を取ることができないので「利き」ではない。
- *  Checks whether there is a piece at `o.from` which looks at `o.to`. The diagonal move of pawn is always considered. A pawn never sees two squares in the front; it can only move to there.
- * @param board 
- * @param o 
- * @returns 
- */
-export function can_see(board: Readonly<Board>, o: { from: Coordinate, to: Coordinate }): boolean {
-    const p = get_entity_from_coord(board, o.from);
-    if (!p) {
-        return false;
-    }
-    if (p.type === "碁") {
-        return false;
-    }
-
-    const delta = coordDiffSeenFrom(p.side, o);
-    if (p.prof === "成桂" || p.prof === "成銀" || p.prof === "成香" || p.prof === "金") {
-        return [
-            { v: 1, h: -1 }, { v: 1, h: 0 }, { v: 1, h: 1 },
-            { v: 0, h: -1 }, /************/  { v: 0, h: 1 },
-            /**************/ { v: -1, h: 0 } /**************/
-        ].some(d => deltaEq(d, delta));
-    } else if (p.prof === "銀") {
-        return [
-            { v: 1, h: -1 }, { v: 1, h: 0 }, { v: 1, h: 1 },
-            /**********************************************/
-            { v: -1, h: -1 }, /************/ { v: 1, h: 1 },
-        ].some(d => deltaEq(d, delta));
-    } else if (p.prof === "桂") {
-        return [
-            { v: 2, h: -1 }, { v: 2, h: 1 }
-        ].some(d => deltaEq(d, delta));
-    } else if (p.prof === "ナ") {
-        return [
-            { v: 2, h: -1 }, { v: 2, h: 1 },
-            { v: -2, h: -1 }, { v: -2, h: 1 },
-            { v: -1, h: 2 }, { v: 1, h: 2 },
-            { v: -1, h: -2 }, { v: 1, h: -2 }
-        ].some(d => deltaEq(d, delta));
-    } else if (p.prof === "キ") {
-        return [
-            { v: 1, h: -1 }, { v: 1, h: 0 }, { v: 1, h: 1 },
-            { v: 0, h: -1 }, /*************/  { v: 0, h: 1 },
-            { v: -1, h: -1 }, { v: -1, h: 0 }, { v: -1, h: 1 },
-        ].some(d => deltaEq(d, delta));
-    } else if (p.prof === "と" || p.prof === "ク") {
-        return long_range([
-            { v: 1, h: -1 }, { v: 1, h: 0 }, { v: 1, h: 1 },
-            { v: 0, h: -1 }, /*************/  { v: 0, h: 1 },
-            { v: -1, h: -1 }, { v: -1, h: 0 }, { v: -1, h: 1 },
-        ], board, o, p.side);
-    } else if (p.prof === "ビ") {
-        return long_range([
-            { v: 1, h: -1 }, { v: 1, h: 1 }, { v: -1, h: -1 }, { v: -1, h: 1 },
-        ], board, o, p.side);
-    } else if (p.prof === "ル") {
-        return long_range([
-            { v: 1, h: 0 }, { v: 0, h: -1 }, { v: 0, h: 1 }, { v: -1, h: 0 },
-        ], board, o, p.side);
-    } else if (p.prof === "香") {
-        return long_range([{ v: 1, h: 0 }], board, o, p.side);
-    } else if (p.prof === "超") {
-        return true;
-    } else if (p.prof === "ポ") {
-        if ([{ v: 1, h: -1 }, { v: 1, h: 0 }, { v: 1, h: 1 }].some(d => deltaEq(d, delta))) {
-            return true;
-        } else {
-            // a pawn can never see two squares in front; it can only move to there
-            return false;
-        }
-    } else {
-        const _: never = p.prof;
-        throw new Error("Should not reach here");
-    }
-}
-
-// since this function is only used to interpolate between two valid points, there is no need to perform and out-of-bounds check.
-function applyDeltaSeenFrom(side: Side, from: Coordinate, delta: { v: number, h: number }): Coordinate {
-    if (side === "白") {
-        const [from_column, from_row] = from;
-        const from_row_index = "一二三四五六七八九".indexOf(from_row);
-        const from_column_index = "９８７６５４３２１".indexOf(from_column);
-        const to_column_index = from_column_index + delta.h;
-        const to_row_index = from_row_index + delta.v;
-        const columns: ShogiColumnName[] = ["９", "８", "７", "６", "５", "４", "３", "２", "１"];
-        const rows: ShogiRowName[] = ["一", "二", "三", "四", "五", "六", "七", "八", "九"];
-        return [columns[to_column_index]!, rows[to_row_index]!];
-    } else {
-        const [from_column, from_row] = from;
-        const from_row_index = "一二三四五六七八九".indexOf(from_row);
-        const from_column_index = "９８７６５４３２１".indexOf(from_column);
-        const to_column_index = from_column_index - delta.h;
-        const to_row_index = from_row_index - delta.v;
-        const columns: ShogiColumnName[] = ["９", "８", "７", "６", "５", "４", "３", "２", "１"];
-        const rows: ShogiRowName[] = ["一", "二", "三", "四", "五", "六", "七", "八", "九"];
-        return [columns[to_column_index]!, rows[to_row_index]!];
-    }
-}
-
-function long_range(directions: { v: number, h: number }[], board: Readonly<Board>, o: { from: Coordinate, to: Coordinate }, side: Side): boolean {
-    const delta = coordDiffSeenFrom(side, o);
-
-    const matching_directions = directions.filter(direction =>
-        delta.v * direction.v + delta.h * direction.h > 0 /* inner product is positive */
-        && delta.v * direction.h - direction.v * delta.h === 0 /* cross product is zero */
-    );
-
-    if (matching_directions.length === 0) {
-        return false;
-    }
-
-    const direction = matching_directions[0]!;
-    for (let i = { v: direction.v, h: direction.h };
-        !deltaEq(i, delta);
-        i.v += direction.v, i.h += direction.h) {
-        const coord = applyDeltaSeenFrom(side, o.from, i);
-        if (get_entity_from_coord(board, coord)) {
-            // blocked by something; cannot see
-            return false;
-        }
-    }
-
-    return true;
 }
 
 function can_move_and_not_cause_doubled_pawns(board: Readonly<Board>, o: { from: Coordinate, to: Coordinate }): boolean {
@@ -646,9 +525,4 @@ function castling(old: ResolvedGameState, o: { from: Coordinate, to: Coordinate;
         hand_of_white: old.hand_of_white,
         by_whom: old.who_goes_next
     }
-}
-
-function do_any_of_my_pieces_see(board: Readonly<Board>, coord: Coordinate, side: Side): boolean {
-    const opponent_piece_coords = lookup_coords_from_side(board, side);
-    return opponent_piece_coords.some(from => can_see(board, { from, to: coord }))
 }
