@@ -282,17 +282,19 @@ function move_piece(old: ResolvedGameState, o: { from: Coordinate, to: Coordinat
 
     if (is_promotable(piece_that_moves.prof)
         && (is_within_nth_furthest_rows(3, o.side, o.from) || is_within_nth_furthest_rows(3, o.side, o.to))
-        && o.promote) {
-        if (piece_that_moves.prof === "桂") {
-            piece_that_moves.prof = "成桂";
-        } else if (piece_that_moves.prof === "銀") {
-            piece_that_moves.prof = "成銀";
-        } else if (piece_that_moves.prof === "香") {
-            piece_that_moves.prof = "成香";
-        } else if (piece_that_moves.prof === "キ") {
-            piece_that_moves.prof = "超";
-        } else if (piece_that_moves.prof === "ポ") {
-            piece_that_moves.prof = "と";
+       ) {
+        if (o.promote) {
+            if (piece_that_moves.prof === "桂") {
+                piece_that_moves.prof = "成桂";
+            } else if (piece_that_moves.prof === "銀") {
+                piece_that_moves.prof = "成銀";
+            } else if (piece_that_moves.prof === "香") {
+                piece_that_moves.prof = "成香";
+            } else if (piece_that_moves.prof === "キ") {
+                piece_that_moves.prof = "超";
+            } else if (piece_that_moves.prof === "ポ") {
+                piece_that_moves.prof = "と";
+            }
         }
     } else {
         if (o.promote !== null) {
