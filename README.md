@@ -1,6 +1,10 @@
-# ShoGoSs
+# ShoGoSs-core
 
-ShoGoSs, a board game of cosmic horror that amalgamates Shogi, Go and chess
+A core library for ShoGoSs.
+
+## What is ShoGoSs?
+
+ShoGoSs is a board game of cosmic horror that amalgamates Shogi, Go and chess.
 
 ## 偉大なる先駆者様方 / The Great Old Ones
 
