@@ -16,6 +16,10 @@ A core library for ShoGoSs. To my knowledge, it fully implements all the rules m
 
 ShoGoSs is a board game of cosmic horror that amalgamates Shogi, Go and chess.
 
+## ライブラリの使い方 / How to use this library
+
+See the examples in [src/tests](https://github.com/Shoggoss/shogoss-core/tree/main/src/tests).
+
 ## 偉大なる先駆者様方 / The Great Old Ones
 
 - https://vrchat.com/home/world/wrld_c7860c60-5ed3-4f67-9c5f-263b193eda31 by https://twitter.com/oga_pleconia
