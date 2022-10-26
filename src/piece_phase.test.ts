@@ -1,4 +1,4 @@
-import { disambiguate_piece_phase_and_apply, can_move } from "./piece_phase"
+import { play_piece_phase, can_move } from "./piece_phase"
 import { get_initial_state } from "./index"
 import { PiecePhasePlayed } from "./type";
 import { put_entity_at_coord_and_also_adjust_flags } from "./board";
@@ -31,7 +31,7 @@ test('what pawn can see / how a pawn can move', () => {
 });
 
 test('fully specified', () => {
-	const knight_move: PiecePhasePlayed = disambiguate_piece_phase_and_apply(
+	const knight_move: PiecePhasePlayed = play_piece_phase(
 		get_initial_state("黒"),
 		{ side: "黒", to: ["１", "六"], from: ["２", "八"], prof: "ナ" }
 	);
@@ -122,7 +122,7 @@ test('５八金右', () => {
 	// First, destroy the queen
 	put_entity_at_coord_and_also_adjust_flags(state.board, ["５", "八"], null);
 
-	const gold_move: PiecePhasePlayed = disambiguate_piece_phase_and_apply(
+	const gold_move: PiecePhasePlayed = play_piece_phase(
 		state,
 		{ side: "黒", to: ["５", "八"], from: "右", prof: "金" }
 	);
@@ -211,7 +211,7 @@ test('５八金左', () => {
 	// First, destroy the queen
 	put_entity_at_coord_and_also_adjust_flags(state.board, ["５", "八"], null);
 
-	const gold_move: PiecePhasePlayed = disambiguate_piece_phase_and_apply(
+	const gold_move: PiecePhasePlayed = play_piece_phase(
 		state,
 		{ side: "黒", to: ["５", "八"], from: "左", prof: "金" }
 	);
@@ -300,7 +300,7 @@ test('５二金右', () => {
 	// First, destroy the queen
 	put_entity_at_coord_and_also_adjust_flags(state.board, ["５", "二"], null);
 
-	const gold_move: PiecePhasePlayed = disambiguate_piece_phase_and_apply(
+	const gold_move: PiecePhasePlayed = play_piece_phase(
 		state,
 		{ side: "白", to: ["５", "二"], from: "右", prof: "金" }
 	);
@@ -389,7 +389,7 @@ test('５二金左', () => {
 	// First, destroy the queen
 	put_entity_at_coord_and_also_adjust_flags(state.board, ["５", "二"], null);
 
-	const gold_move: PiecePhasePlayed = disambiguate_piece_phase_and_apply(
+	const gold_move: PiecePhasePlayed = play_piece_phase(
 		state,
 		{ side: "白", to: ["５", "二"], from: "左", prof: "金" }
 	);
@@ -474,7 +474,7 @@ test('５二金左', () => {
 
 
 test('disambiguate', () => {
-	const knight_move: PiecePhasePlayed = disambiguate_piece_phase_and_apply(get_initial_state("黒"), { side: "黒", to: ["１", "六"], prof: "ナ" });
+	const knight_move: PiecePhasePlayed = play_piece_phase(get_initial_state("黒"), { side: "黒", to: ["１", "六"], prof: "ナ" });
 	expect(knight_move).toEqual({
 		phase: "piece_phase_played",
 		board: [

@@ -38,7 +38,7 @@ function parachute(old: ResolvedGameState, o: { side: Side, prof: UnpromotedShog
  * @param old 呼び出し後に破壊されている可能性があるので、後で使いたいならディープコピーしておくこと。
  * @param o 
  */
-export function disambiguate_piece_phase_and_apply(old: ResolvedGameState, o: Readonly<PiecePhaseMove>): PiecePhasePlayed {
+export function play_piece_phase(old: ResolvedGameState, o: Readonly<PiecePhaseMove>): PiecePhasePlayed {
     // The thing is that we have to infer which piece has moved, since the usual notation does not signify
     // where the piece comes from.
     // 面倒なのは、具体的にどの駒が動いたのかを、棋譜の情報から復元してやらないといけないという点である（普通始点は書かないので）。

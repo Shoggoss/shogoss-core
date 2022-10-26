@@ -1,10 +1,16 @@
 import { get_entity_from_coord, put_entity_at_coord_and_also_adjust_flags } from "./board";
-import { disambiguate_piece_phase_and_apply } from "./piece_phase";
+import { play_piece_phase } from "./piece_phase";
 import { GameEnd, Move, PiecePhasePlayed, ResolvedGameState, StonePhasePlayed } from "./type"
 import { Coordinate, displayCoord } from "./coordinate";
 import { resolve_after_stone_phase } from "./after_stone_phase";
 import { opponentOf, Side } from "./side";
 import { remove_surrounded } from "./surround";
+
+export { Side, opponentOf } from "./side";
+export * from "./type";
+export { can_see } from "./can_see";
+export { can_move } from "./piece_phase";
+
 export const get_initial_state: (who_goes_first: Side) => ResolvedGameState = (who_goes_first: Side) => {
     return {
         phase: "resolved",
@@ -121,7 +127,7 @@ function place_stone(old: PiecePhasePlayed, side: Side, stone_to: Coordinate): S
 }
 
 function one_turn(old: ResolvedGameState, move: Move): ResolvedGameState | GameEnd {
-    const after_piece_phase = disambiguate_piece_phase_and_apply(old, move.piece_phase);
+    const after_piece_phase = play_piece_phase(old, move.piece_phase);
 
     const after_stone_phase: StonePhasePlayed = move.stone_to ? place_stone(after_piece_phase, move.piece_phase.side, move.stone_to) : {
         phase: "stone_phase_played",
