@@ -1,9 +1,10 @@
 {
-  "name": "shogoss",
-  "version": "0.0.0",
+  "name": "shogoss-core",
+  "version": "0.0.2",
   "description": "ShoGoSs, a board game of cosmic horror that amalgamates Shogi, Go and chess",
   "main": "dist/index.js",
   "scripts": {
+    "test-ci": "jest --ci --coverage",
     "test": "tsc; jest",
     "test-coverage": "jest --coverage",
     "build": "tsc",
