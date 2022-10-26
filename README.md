@@ -1,6 +1,16 @@
 # ShoGoSs-core
 
-A core library for ShoGoSs.
+A core library for ShoGoSs. To my knowledge, it fully implements all the rules mentioned in the [rulebook](https://shogos-app.web.app), except for:
+
+- The possibility of having no piece to move
+- Comparing the sizes of the surrounded territories
+
+しょ碁スのコアライブラリ。[ルールブック](https://shogos-app.web.app)に記載のあるルールはほぼ全て実装できているはず。例外として、
+
+- 「駒フェイズが着手不能なのでパス」
+- 「陣地の多い側が勝利」
+
+は実装していない。
 
 ## What is ShoGoSs?
 
