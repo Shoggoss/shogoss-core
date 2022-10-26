@@ -1,5 +1,11 @@
 # ShoGoSs-core
 
+![Branches](./badges/coverage-branches.svg)
+![Functions](./badges/coverage-functions.svg)
+![Lines](./badges/coverage-lines.svg)
+![Statements](./badges/coverage-statements.svg)
+![Jest coverage](./badges/coverage-jest%20coverage.svg)
+
 A core library for ShoGoSs. To my knowledge, it fully implements all the rules mentioned in the [rulebook](https://shogos-app.web.app), except for:
 
 - The possibility of having no piece to move
