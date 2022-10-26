@@ -1,7 +1,7 @@
 import { Board, Entity, Profession } from "./type";
 import { Coordinate, displayCoord, ShogiColumnName, ShogiRowName } from "./coordinate";
 import { Side } from "./side";
-export function get_entity_from_coord(board: Readonly<Board>, coord: Coordinate): Entity | null {
+export function get_entity_from_coord<T>(board: Readonly<(T | null)[][]>, coord: Coordinate): T | null {
     const [column, row] = coord;
     const row_index = "一二三四五六七八九".indexOf(row);
     const column_index = "９８７６５４３２１".indexOf(column);
