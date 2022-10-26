@@ -1,6 +1,6 @@
-import { get_entity_from_coord, lookup_coords_from_side, lookup_coords_from_side_and_prof, put_entity_at_coord_and_also_adjust_flags } from "./board";
+import { get_entity_from_coord, lookup_coords_from_side_and_prof, put_entity_at_coord_and_also_adjust_flags } from "./board";
 import { Board, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, unpromote, UnpromotedShogiProfession, isUnpromotedShogiProfession, is_promotable } from "./type"
-import { columnsBetween, coordDiff, coordEq, Coordinate, displayCoord, ShogiColumnName, ShogiRowName } from "./coordinate"
+import { columnsBetween,  coordEq, Coordinate, displayCoord, ShogiColumnName } from "./coordinate"
 import { Side, coordDiffSeenFrom, RightmostWhenSeenFrom, LeftmostWhenSeenFrom, opponentOf, is_within_nth_furthest_rows, applyDeltaSeenFrom } from "./side";
 import { can_see, do_any_of_my_pieces_see } from "./can_see";
 

@@ -10,6 +10,7 @@ export { Side, opponentOf } from "./side";
 export * from "./type";
 export { can_see } from "./can_see";
 export { can_move } from "./piece_phase";
+export { displayCoord, ShogiColumnName, ShogiRowName, Coordinate, coordEq } from "./coordinate"
 
 export const get_initial_state: (who_goes_first: Side) => ResolvedGameState = (who_goes_first: Side) => {
     return {
