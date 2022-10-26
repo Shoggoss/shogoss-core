@@ -87,16 +87,6 @@ export function professionFullName(a: Profession): string {
     else { return a; }
 }
 
-export function isShogiProfession(a: unknown): a is ShogiProfession {
-    return a === "香" ||
-        a === "桂" ||
-        a === "銀" ||
-        a === "金" ||
-        a === "成香" ||
-        a === "成桂" ||
-        a === "成銀";
-}
-
 export function isUnpromotedShogiProfession(a: unknown): a is UnpromotedShogiProfession {
     return a === "香" ||
         a === "桂" ||

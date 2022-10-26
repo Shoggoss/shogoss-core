@@ -118,11 +118,9 @@ function place_stone(old: PiecePhasePlayed, side: Side, stone_to: Coordinate): S
     } else {
         throw new Error(`${side}が${displayCoord(stone_to)}に碁石を置こうとしていますが、打った瞬間に取られてしまうのでここは着手禁止点です`);
     }
-
-    
 }
 
-export function from_resolved_to_resolved(old: ResolvedGameState, move: Move): ResolvedGameState | GameEnd {
+function one_turn(old: ResolvedGameState, move: Move): ResolvedGameState | GameEnd {
     const after_piece_phase = disambiguate_piece_phase_and_apply(old, move.piece_phase);
 
     const after_stone_phase: StonePhasePlayed = move.stone_to ? place_stone(after_piece_phase, move.piece_phase.side, move.stone_to) : {
@@ -145,7 +143,7 @@ export function main(moves: Move[]): ResolvedGameState | GameEnd {
 export function from_custom_state(moves: Move[], initial_state: ResolvedGameState): ResolvedGameState | GameEnd {
     let state = initial_state;
     for (const move of moves) {
-        const next = from_resolved_to_resolved(state, move);
+        const next = one_turn(state, move);
         if (next.phase === "game_end") {
             return next;
         }
