@@ -33,8 +33,7 @@ export default {
   // Indicates which provider should be used to instrument code for coverage
   coverageProvider: "v8",
 
-  coverageReporters: ["json-summary"],
-
+  coverageReporters: ["json", "text", "lcov", "clover", "json-summary"],
   // A list of reporter names that Jest uses when writing coverage reports
   // coverageReporters: [
   //   "json",
