@@ -1,8 +1,18 @@
 import { get_entity_from_coord, lookup_coords_from_side_and_prof, put_entity_at_coord_and_also_adjust_flags } from "./board";
-import { Board, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, unpromote, UnpromotedShogiProfession, isUnpromotedShogiProfession, is_promotable, Entity, ChessProfession, KingProfession, ShogiProfession } from "./type"
+import { Board, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, unpromote, UnpromotedShogiProfession, isUnpromotedShogiProfession, is_promotable, Entity, ChessProfession, KingProfession, ShogiProfession, Profession } from "./type"
 import { columnsBetween, coordEq, Coordinate, displayCoord, ShogiColumnName } from "./coordinate"
 import { Side, coordDiffSeenFrom, RightmostWhenSeenFrom, LeftmostWhenSeenFrom, opponentOf, is_within_nth_furthest_rows, applyDeltaSeenFrom } from "./side";
 import { can_see, do_any_of_my_pieces_see } from "./can_see";
+
+export function entry_is_forbidden(prof: Profession, side: Side, to: Coordinate) {
+    if (prof === "桂") {
+        return is_within_nth_furthest_rows(2, side, to);
+    } else if (prof === "香" || prof === "ポ") {
+        return is_within_nth_furthest_rows(1, side, to);
+    } else {
+        return false;
+    }
+}
 
 /** 駒を打つ。手駒から将棋駒を盤上に移動させる。行きどころの無い位置に桂馬と香車を打ったらエラー。
  * 
@@ -11,14 +21,8 @@ function parachute(old: ResolvedGameState, o: { side: Side, prof: UnpromotedShog
     if (get_entity_from_coord(old.board, o.to)) {
         throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}打とのことですが、${displayCoord(o.to)}マスは既に埋まっています`);
     }
-    if (o.prof === "桂") {
-        if (is_within_nth_furthest_rows(2, o.side, o.to)) {
-            throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}打とのことですが、行きどころのない桂馬は打てません`);
-        }
-    } else if (o.prof === "香") {
-        if (is_within_nth_furthest_rows(1, o.side, o.to)) {
-            throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}打とのことですが、行きどころのない香車は打てません`);
-        }
+    if (entry_is_forbidden(o.prof, o.side, o.to)) {
+        throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}打とのことですが、行きどころのない${professionFullName(o.prof)}は打てません`);
     }
     const hand = old[o.side === "白" ? "hand_of_white" : "hand_of_black"];
     put_entity_at_coord_and_also_adjust_flags(old.board, o.to, { type: "しょ", side: o.side, prof: o.prof, can_kumal: false });

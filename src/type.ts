@@ -46,10 +46,33 @@ export type Board = Tuple9<Row>;
 export type Row = Tuple9<Entity | null>;
 
 export type Entity =
-    | { type: "しょ", side: Side, prof: ShogiProfession, can_kumal: boolean } // shogi_piece
-    | { type: "碁", side: Side } // go_stone
-    | { type: "ス", side: Side, prof: ChessProfession, never_moved: boolean, subject_to_en_passant?: true } // chess_piece
-    | { type: "王", side: Side, prof: KingProfession, has_moved_only_once: boolean, never_moved: boolean }
+    | ShogiEntity
+    | StoneEntity
+    | ChessEntity
+    | KingEntity
+    ;
+
+export type StoneEntity = { type: "碁", side: Side }
+export type ShogiEntity = {
+    type: "しょ";
+    side: Side;
+    prof: ShogiProfession;
+    can_kumal: boolean;
+};
+export type ChessEntity = {
+    type: "ス";
+    side: Side;
+    prof: ChessProfession;
+    never_moved: boolean;
+    subject_to_en_passant?: true | undefined;
+};
+export type KingEntity = {
+    type: "王";
+    side: Side;
+    prof: KingProfession;
+    has_moved_only_once: boolean;
+    never_moved: boolean;
+};
 export type Profession = KingProfession | ShogiProfession | ChessProfession;
 export type UnpromotedShogiProfession =
     | "香" // lance 
