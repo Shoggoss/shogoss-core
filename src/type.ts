@@ -64,7 +64,7 @@ export type ChessEntity = {
     side: Side;
     prof: ChessProfession;
     never_moved: boolean;
-    subject_to_en_passant?: true | undefined;
+    subject_to_en_passant?: true;
 };
 export type KingEntity = {
     type: "王";
@@ -73,6 +73,11 @@ export type KingEntity = {
     has_moved_only_once: boolean;
     never_moved: boolean;
 };
+
+export function clone_entity(entity: Readonly<Entity>): Entity {
+    return JSON.parse(JSON.stringify(entity)) as Entity;
+}
+
 export type Profession = KingProfession | ShogiProfession | ChessProfession;
 export type UnpromotedShogiProfession =
     | "香" // lance 
