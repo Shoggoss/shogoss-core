@@ -430,7 +430,7 @@ function can_move_and_not_cause_doubled_pawns(board: Readonly<Board>, o: { from:
     }
 }
 
-export function throws_if_uncastlable(board: Readonly<Board>, o: { from: Coordinate, to: Coordinate; side: Side; }): {
+export function throws_if_uncastlable(board: Readonly<Board>, o: { from: Coordinate, to: Coordinate }): {
     coord_that_king_passes_through: Coordinate, rook: {
         type: "ス";
         side: Side;
@@ -464,23 +464,23 @@ export function throws_if_uncastlable(board: Readonly<Board>, o: { from: Coordin
                 const coord_that_king_passes_through: Coordinate = ["９８７６５４３２１"[(from_column_index + to_column_index) / 2] as ShogiColumnName, o.from[1]];
 
                 if (rook?.type !== "ス" || rook.prof !== "ル") {
-                    throw new Error(`${o.side}が${displayCoord(o.from)}から${displayCoord(o.to)}へとキング王をキャスリングしようとしていますが、${displayCoord(rook_coord)}にルークがないのでキャスリングできません`);
+                    throw new Error(`${king.side}が${displayCoord(o.from)}から${displayCoord(o.to)}へとキング王をキャスリングしようとしていますが、${displayCoord(rook_coord)}にルークがないのでキャスリングできません`);
                 }
 
                 if (!rook.never_moved) {
-                    throw new Error(`${o.side}が${displayCoord(o.from)}から${displayCoord(o.to)}へとキング王をキャスリングしようとしていますが、${displayCoord(rook_coord)}にあるルークは既に動いたことがあるルークなのでキャスリングできません`);
+                    throw new Error(`${king.side}が${displayCoord(o.from)}から${displayCoord(o.to)}へとキング王をキャスリングしようとしていますが、${displayCoord(rook_coord)}にあるルークは既に動いたことがあるルークなのでキャスリングできません`);
                 }
 
-                if (do_any_of_my_pieces_see(board, o.from, opponentOf(o.side))) {
-                    throw new Error(`${o.side}が${displayCoord(o.from)}から${displayCoord(o.to)}へとキング王をキャスリングしようとしていますが、相手からの王手（チェック）が掛かっているのでキャスリングできません`);
+                if (do_any_of_my_pieces_see(board, o.from, opponentOf(king.side))) {
+                    throw new Error(`${king.side}が${displayCoord(o.from)}から${displayCoord(o.to)}へとキング王をキャスリングしようとしていますが、相手からの王手（チェック）が掛かっているのでキャスリングできません`);
                 }
 
-                if (do_any_of_my_pieces_see(board, coord_that_king_passes_through, opponentOf(o.side))) {
-                    throw new Error(`${o.side}が${displayCoord(o.from)}から${displayCoord(o.to)}へとキング王をキャスリングしようとしていますが、通過点のマスに敵の駒の利きがあるのでキャスリングできません`);
+                if (do_any_of_my_pieces_see(board, coord_that_king_passes_through, opponentOf(king.side))) {
+                    throw new Error(`${king.side}が${displayCoord(o.from)}から${displayCoord(o.to)}へとキング王をキャスリングしようとしていますが、通過点のマスに敵の駒の利きがあるのでキャスリングできません`);
                 }
 
-                if (do_any_of_my_pieces_see(board, o.to, opponentOf(o.side))) {
-                    throw new Error(`${o.side}が${displayCoord(o.from)}から${displayCoord(o.to)}へとキング王をキャスリングしようとしていますが、移動先のマスに敵の駒の利きがあるのでキャスリングできません`);
+                if (do_any_of_my_pieces_see(board, o.to, opponentOf(king.side))) {
+                    throw new Error(`${king.side}が${displayCoord(o.from)}から${displayCoord(o.to)}へとキング王をキャスリングしようとしていますが、移動先のマスに敵の駒の利きがあるのでキャスリングできません`);
                 }
                 return { coord_that_king_passes_through, rook, rook_coord, king }
             }
