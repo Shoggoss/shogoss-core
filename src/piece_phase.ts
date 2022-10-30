@@ -56,6 +56,8 @@ export function throws_if_unkumalable(board: Readonly<Board>, o: { from: Coordin
 
             if (!lance.can_kumal) {
                 throw new Error(`キング王が${displayCoord(o.from)}から${displayCoord(o.to)}へ動くくまりんぐを${king.side}が試みていますが、この香車は打たれた香車なのでくまりんぐの対象外です`);
+            } else if (lance.side !== king.side) {
+                throw new Error(`キング王が${displayCoord(o.from)}から${displayCoord(o.to)}へ動くくまりんぐを${king.side}が試みていますが、この香車は相手の香車なのでくまりんぐの対象外です`)
             }
             return { king, lance };
         }
