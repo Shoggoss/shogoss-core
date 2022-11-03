@@ -1,6 +1,6 @@
 {
   "name": "shogoss-core",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "ShoGoSs, a board game of cosmic horror that amalgamates Shogi, Go and chess",
   "main": "dist/index.js",
   "scripts": {
