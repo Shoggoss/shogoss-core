@@ -4,7 +4,7 @@ import { put_entity_at_coord_and_also_adjust_flags } from "../board";
 test('en passant', () => {
 	const state = get_initial_state("黒");
 
-	// destroy the pawn at ５七 to avoid 二ポ
+	// destroy the pawn at ５七 to avoid ニポ
 	put_entity_at_coord_and_also_adjust_flags(state.board, ["５", "七"], null);
 
 	expect(from_custom_state([
@@ -93,7 +93,7 @@ test('en passant', () => {
 test('en passant fails', () => {
     const state = get_initial_state("黒");
 
-    // destroy the pawn at ５七 to avoid 二ポ
+    // destroy the pawn at ５七 to avoid ニポ
     put_entity_at_coord_and_also_adjust_flags(state.board, ["５", "七"], null);
 
     // Cannot do en passant, since there are intervening moves

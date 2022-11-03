@@ -10,22 +10,22 @@ import { Board, Entity, GameEnd, ResolvedGameState, StonePhasePlayed, unpromote 
  * 
  * 1. 自分の駒と石によって囲まれている相手の駒と石をすべて取り除く
  * 2. 相手の駒と石によって囲まれている自分の駒と石をすべて取り除く
- * 3. 二ポが発生しているか・キング王が盤面から除かれているかを判定。
+ * 3. ニポが発生しているか・キング王が盤面から除かれているかを判定。
  *   3-1. 両キング王が除かれていたら、カラテジャンケンボクシング
  *   3-2. 自分の王だけ除かれていたら、それは「王の自殺による敗北」
  *   3-3. 相手の王だけ除かれている場合、
- *       3-3-1. 二ポが発生していなければ、それは「王の排除による勝利」
+ *       3-3-1. ニポが発生していなければ、それは「王の排除による勝利」
  *             3-3-1-1. 相手の王を取り除いたのがステップ 1. であり、
  *                      しかも「ごっそり」（@re_hako_moon曰く、2個か3個）
  *                      に該当するときには「ショゴス！」の発声
- *       3-3-2. 二ポが発生しているなら、カラテジャンケンボクシング
+ *       3-3-2. ニポが発生しているなら、カラテジャンケンボクシング
  *   3-4. どちらの王も除かれていない場合、
- *       3-4-1. 二ポが発生していなければ、ゲーム続行
- *       3-4-2. 二ポが発生しているなら、それは「二ポによる敗北」
+ *       3-4-1. ニポが発生していなければ、ゲーム続行
+ *       3-4-2. ニポが発生しているなら、それは「ニポによる敗北」
  *   
  * 1 → 2 の順番である根拠：コンビネーションアタックの存在
  * 2 → 3 の順番である根拠：公式ルール追記
- * 「石フェイズを着手した結果として自分のポーン兵が盤上から消え二ポが解決される場合も、反則をとらず進行できる。」
+ * 「石フェイズを着手した結果として自分のポーン兵が盤上から消えニポが解決される場合も、反則をとらず進行できる。」
  * 
  * 1. Remove all the opponent's pieces and stones surrounded by your pieces and stones
  * 2. Remove all your pieces and stones surrounded by the opponent's pieces and stones
@@ -40,7 +40,7 @@ import { Board, Entity, GameEnd, ResolvedGameState, StonePhasePlayed, unpromote 
  * 
  * The ordering 1 → 2 is needed to support the combination attack.
  * The ordering 2 → 3 is explicitly mentioned by the addendum to the official rule: 
- *         「石フェイズを着手した結果として自分のポーン兵が盤上から消え二ポが解決される場合も、反則をとらず進行できる。」
+ *         「石フェイズを着手した結果として自分のポーン兵が盤上から消えニポが解決される場合も、反則をとらず進行できる。」
  **/
 export function resolve_after_stone_phase(played: StonePhasePlayed): ResolvedGameState | GameEnd {
     remove_surrounded_enitities_from_board_and_add_to_hand_if_necessary(played, opponentOf(played.by_whom));

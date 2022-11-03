@@ -1,4 +1,5 @@
-import { main } from "..";
+import { from_custom_state, get_initial_state, main } from "..";
+import { put_entity_at_coord_and_also_adjust_flags } from "../board";
 
 test('左くまりんぐ', () => {
 	expect(main([
@@ -186,4 +187,19 @@ test('香車じゃなくて碁石があるのでくまりんぐができない',
 		{ piece_phase: { side: "白", to: ["１", "六"], prof: "ク" } },
 		{ piece_phase: { side: "黒", to: ["１", "九"], prof: "キ" } }, // kumaling
 	])).toThrowError("キング王が５九から１九へ動くくまりんぐを黒が試みていますが、１九にあるのは香車ではなく碁石です")
+});
+
+test("既に埋まっている", () => {
+	const state = get_initial_state("黒");
+	put_entity_at_coord_and_also_adjust_flags(state.board, ["３", "六"], { type: "しょ", prof: "香", can_kumal: false, side: "白" })
+	put_entity_at_coord_and_also_adjust_flags(state.board, ["１", "八"], null)
+	expect(() => from_custom_state([
+		{ "piece_phase": { "side": "黒", "to": ["３", "六"], "prof": "ポ" } },
+		{ "piece_phase": { "side": "白", "to": ["３", "四"], "prof": "ポ" } },
+		{ "piece_phase": { "side": "黒", "to": ["１", "八"], "prof": "香" } },
+		{ "piece_phase": { "side": "白", "to": ["３", "五"], "prof": "ポ" } },
+		{ "piece_phase": { "side": "黒", "to": ["１", "九"], "prof": "香" } },
+		{ "piece_phase": { "side": "白", "to": ["３", "六"], "prof": "ポ" } },
+		{ "piece_phase": { "side": "黒", "to": ["１", "九"], "prof": "キ" } },
+	], state)).toThrowError(`キング王が５九から１九へ動くくまりんぐを黒が試みていますが、この香車は打たれた香車なのでくまりんぐの対象外です`);
 });

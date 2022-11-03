@@ -162,11 +162,11 @@ export function play_piece_phase(old: ResolvedGameState, o: Readonly<PiecePhaseM
         // ・そうでなくて、目的地に行ける駒が盤上に 1 種類しかないなら、それをする
         // という解決をすることになる。
         //
-        // しかし、このゲームにおいて、二ポは「着手できない手」ではなくて、「着手した後に、石フェイズ解消後にもそれが残ってしまっていたら、反則負け」となるものである。
+        // しかし、このゲームにおいて、ニポは「着手できない手」ではなくて、「着手した後に、石フェイズ解消後にもそれが残ってしまっていたら、反則負け」となるものである。
         // この前提のもとで、ポが横並びしているときに、片方のポの前にある駒を取ろうとしている状況を考えてほしい。
-        // すると、常識的にはそんなあからさまな二ポは指さないので、1マス前進して取るのが当たり前であり、
+        // すると、常識的にはそんなあからさまなニポは指さないので、1マス前進して取るのが当たり前であり、
         // それを棋譜に起こすときにわざわざ「直」を付けるなどバカバカしい。
-        // よって、出発点推論においては、最初は二ポは排除して推論することとする。
+        // よって、出発点推論においては、最初はニポは排除して推論することとする。
 
         // We have no info on where the piece came from.
         // In such cases, the rational way of inference is
@@ -202,7 +202,7 @@ export function play_piece_phase(old: ResolvedGameState, o: Readonly<PiecePhaseM
                     const from = pruned_allowing_doubled_pawns[0]!;
                     return move_piece(old, { from, to: o.to, side: o.side, promote: o.promotes ?? null });
                 } else {
-                    throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}が盤上に複数あり、しかもどれを指しても二ポです`);
+                    throw new Error(`${o.side}が${displayCoord(o.to)}${o.prof}とのことですが、そのような移動ができる${o.side}の${professionFullName(o.prof)}が盤上に複数あり、しかもどれを指してもニポです`);
                 }
             }
         } else if (pruned.length === 1) {

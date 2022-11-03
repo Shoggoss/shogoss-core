@@ -11,6 +11,8 @@ test('what pawn can see / how a pawn can move', () => {
 	// destroy the pawn in the center rank
 	put_entity_at_coord_and_also_adjust_flags(state.board, ["５", "七"], null);
 
+	put_entity_at_coord_and_also_adjust_flags(state.board, ["９", "六"], { prof: "ビ", never_moved: false, type: "ス", side: "白" })
+
 	// ポーンの「利き」は 2 マス前進を含まない
 	// cannot see two squares in front
 	expect(can_see(state.board, { from: ["６", "七"], to: ["６", "六"] })).toBe(true);
@@ -20,6 +22,11 @@ test('what pawn can see / how a pawn can move', () => {
 	// no obstruction; can move one or two steps forward
 	expect(can_move(state.board, { from: ["６", "七"], to: ["６", "六"] })).toBe(true);
 	expect(can_move(state.board, { from: ["６", "七"], to: ["６", "五"] })).toBe(true);
+
+	// 妨げがあるので、前に 1 歩しか進めない
+	expect(can_move(state.board, { from: ["９", "七"], to: ["９", "六"] })).toBe(true);
+	expect(can_move(state.board, { from: ["９", "七"], to: ["９", "五"] })).toBe(false);
+
 
 	// 「利き」はポーンの斜め移動を常に含むものとする
 	// the concept of `see` always includes the diagonal movement
