@@ -1,6 +1,6 @@
-import { get_entity_from_coord, put_entity_at_coord_and_also_adjust_flags } from "./board";
+import { clone_board, get_entity_from_coord, put_entity_at_coord_and_also_adjust_flags } from "./board";
 import { play_piece_phase } from "./piece_phase";
-import { GameEnd, Move, PiecePhasePlayed, ResolvedGameState, StonePhasePlayed } from "./type"
+import { Board, GameEnd, Move, PiecePhasePlayed, ResolvedGameState, StonePhasePlayed } from "./type"
 import { Coordinate, displayCoord } from "./coordinate";
 import { resolve_after_stone_phase } from "./after_stone_phase";
 import { opponentOf, Side } from "./side";
@@ -124,6 +124,29 @@ function place_stone(old: PiecePhasePlayed, side: Side, stone_to: Coordinate): S
         };
     } else {
         throw new Error(`${side}が${displayCoord(stone_to)}に碁石を置こうとしていますが、打った瞬間に取られてしまうのでここは着手禁止点です`);
+    }
+}
+
+export function can_place_stone(board: Readonly<Board>, side: Side, stone_to: Coordinate): boolean {
+    if (get_entity_from_coord(board, stone_to)) { // if the square is already occupied
+        return false;
+    }
+
+    const new_board: Board = clone_board(board);
+
+    // まず置く
+    put_entity_at_coord_and_also_adjust_flags(new_board, stone_to, { type: "碁", side });
+
+    // 置いた後で、着手禁止かどうかを判断するために、
+    //『囲まれている相手の駒/石を取る』→『囲まれている自分の駒/石を取る』をシミュレーションして、置いた位置の石が死んでいたら
+    const black_and_white: (Side | null)[][] = new_board.map(row => row.map(sq => sq === null ? null : sq.side));
+    const opponent_removed = remove_surrounded(opponentOf(side), black_and_white);
+    const result = remove_surrounded(side, opponent_removed);
+
+    if (get_entity_from_coord(result, stone_to)) {
+        return true;
+    } else {
+        return false;
     }
 }
 

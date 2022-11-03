@@ -1,4 +1,4 @@
-import { Board, Entity, Profession } from "./type";
+import { Board, clone_entity, Entity, Profession } from "./type";
 import { Coordinate, displayCoord, ShogiColumnName, ShogiRowName } from "./coordinate";
 import { Side } from "./side";
 export function get_entity_from_coord<T>(board: Readonly<(T | null)[][]>, coord: Coordinate): T | null {
@@ -9,6 +9,10 @@ export function get_entity_from_coord<T>(board: Readonly<(T | null)[][]>, coord:
         throw new Error(`座標「${displayCoord(coord)}」は不正です`)
     }
     return (board[row_index]?.[column_index]) ?? null;
+}
+
+export function clone_board(board: Readonly<Board>): Board {
+    return board.map(row => row.map(sq => sq === null ? null : clone_entity(sq))) as Board
 }
 
 export function delete_en_passant_flag(board: Board, coord: Coordinate): void {
