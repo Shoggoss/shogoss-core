@@ -1,6 +1,14 @@
 import { from_custom_state, get_initial_state } from "..";
 import { put_entity_at_coord_and_also_adjust_flags } from "../board";
 
+test('５八金_ambiguous', () => {
+	const state = get_initial_state("黒");
+	put_entity_at_coord_and_also_adjust_flags(state.board, ["５", "八"], null); // destroy the queen
+	expect(() => from_custom_state([
+		{ piece_phase: { side: "黒", to: ["５", "八"], prof: "金" } }
+	], state)).toThrowError(`黒が５八金とのことですが、そのような移動ができる黒の金将が盤上に複数あり、どれを採用するべきか分かりません`);
+});
+
 test('５八金右', () => {
 	const state = get_initial_state("黒");
 	put_entity_at_coord_and_also_adjust_flags(state.board, ["５", "八"], null); // destroy the queen

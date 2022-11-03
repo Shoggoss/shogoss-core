@@ -1,6 +1,6 @@
 import { get_entity_from_coord, lookup_coords_from_side_and_prof, put_entity_at_coord_and_also_adjust_flags } from "./board";
 import { Board, PiecePhaseMove, PiecePhasePlayed, professionFullName, ResolvedGameState, unpromote, UnpromotedShogiProfession, isUnpromotedShogiProfession, is_promotable, Entity, ChessProfession, KingProfession, ShogiProfession, Profession } from "./type"
-import { columnsBetween, coordEq, Coordinate, displayCoord, ShogiColumnName } from "./coordinate"
+import { columnsBetween, coordDiff, coordEq, Coordinate, displayCoord, ShogiColumnName } from "./coordinate"
 import { Side, coordDiffSeenFrom, RightmostWhenSeenFrom, LeftmostWhenSeenFrom, opponentOf, is_within_nth_furthest_rows, applyDeltaSeenFrom } from "./side";
 import { can_see, do_any_of_my_pieces_see } from "./can_see";
 
@@ -72,7 +72,9 @@ export function throws_if_unkumalable(board: Readonly<Board>, o: { from: Coordin
 function kumaling_or_castling(old: ResolvedGameState, from: Coordinate, to: Coordinate): PiecePhasePlayed {
     const king = get_entity_from_coord(old.board, from);
     if (king?.type === "王") {
-        if (king.never_moved) {
+        const diff = coordDiff({ from, to });
+        // くまりんぐに見えるものだけをくまりんぐ判定する
+        if (king.never_moved && diff.v === 0 && (diff.h === 4 || diff.h === -4)) {
             const { lance } = throws_if_unkumalable(old.board, { from, to });
             put_entity_at_coord_and_also_adjust_flags(old.board, to, king);
             put_entity_at_coord_and_also_adjust_flags(old.board, from, lance);
@@ -96,7 +98,7 @@ function kumaling_or_castling(old: ResolvedGameState, from: Coordinate, to: Coor
             throw new Error(`${king.side}が${displayCoord(to)}キとのことですが、そのような移動ができる${king.side}の${professionFullName("キ")}は盤上にありません`);
         }
     } else {
-        throw new Error(`function \`kumaling2()\` called on a non-king piece`);
+        throw new Error(`function \`kumaling_or_castling()\` called on a non-king piece`);
     }
 }
 
@@ -231,12 +233,10 @@ export function play_piece_phase(old: ResolvedGameState, o: Readonly<PiecePhaseM
  */
 function move_piece(old: ResolvedGameState, o: { from: Coordinate, to: Coordinate, side: Side, promote: boolean | null }): PiecePhasePlayed {
     const piece_that_moves = get_entity_from_coord(old.board, o.from);
-    if (!piece_that_moves) {
-        throw new Error(`${o.side}が${displayCoord(o.from)}から${displayCoord(o.to)}への移動を試みていますが、${displayCoord(o.from)}には駒がありません`);
-    } else if (piece_that_moves.type === "碁") {
-        throw new Error(`${o.side}が${displayCoord(o.from)}から${displayCoord(o.to)}への移動を試みていますが、${displayCoord(o.from)}にあるのは碁石であり、駒ではありません`);
-    } else if (piece_that_moves.side !== o.side) {
-        throw new Error(`${o.side}が${displayCoord(o.from)}から${displayCoord(o.to)}への移動を試みていますが、${displayCoord(o.from)}にあるのは${opponentOf(o.side)}の駒です`);
+
+    // 要求を満たしていない
+    if (!piece_that_moves || piece_that_moves.type === "碁" || piece_that_moves.side !== o.side) {
+        throw new Error(`should not reach here`);
     }
 
     const res: boolean | "en passant" = can_move(old.board, { from: o.from, to: o.to });
@@ -280,9 +280,7 @@ function move_piece(old: ResolvedGameState, o: { from: Coordinate, to: Coordinat
                 piece_that_moves.prof = "と";
             }
         } else {
-            if ((piece_that_moves.prof === "桂" && is_within_nth_furthest_rows(2, o.side, o.to))
-                || (piece_that_moves.prof === "香" && is_within_nth_furthest_rows(1, o.side, o.to))
-            ) {
+            if (entry_is_forbidden(piece_that_moves.prof, o.side, o.to)) {
                 throw new Error(`${o.side}が${displayCoord(o.to)}${piece_that_moves.prof}不成とのことですが、${professionFullName(piece_that_moves.prof)}を不成で行きどころのないところに行かせることはできません`)
             }
         }

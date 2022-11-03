@@ -1,5 +1,87 @@
 import { main } from "..";
 
+test('左くまりんぐ', () => {
+	expect(main([
+		{ piece_phase: { side: "黒", to: ["９", "九"], prof: "キ" } }, // kumaling
+	])).toEqual({
+		phase: "resolved",
+		hand_of_black: [],
+		hand_of_white: [],
+		who_goes_next: "白",
+		board: [
+			[
+				{ type: "しょ", side: "白", prof: "香", can_kumal: true },
+				{ type: "しょ", side: "白", prof: "桂", can_kumal: false },
+				{ type: "しょ", side: "白", prof: "銀", can_kumal: false },
+				{ type: "しょ", side: "白", prof: "金", can_kumal: false },
+				{ type: "王", side: "白", prof: "キ", never_moved: true, has_moved_only_once: false },
+				{ type: "しょ", side: "白", prof: "金", can_kumal: false },
+				{ type: "しょ", side: "白", prof: "銀", can_kumal: false },
+				{ type: "しょ", side: "白", prof: "桂", can_kumal: false },
+				{ type: "しょ", side: "白", prof: "香", can_kumal: true },
+			],
+			[
+				{ type: "ス", side: "白", prof: "ル", never_moved: true },
+				{ type: "ス", side: "白", prof: "ナ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ビ", never_moved: true },
+				null,
+				{ type: "ス", side: "白", prof: "ク", never_moved: true },
+				null,
+				{ type: "ス", side: "白", prof: "ビ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ナ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ル", never_moved: true },
+			],
+			[
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+			],
+			[null, null, null, null, null, null, null, null, null,],
+			[null, null, null, null, null, null, null, null, null,],
+			[null, null, null, null, null, null, null, null, null,],
+			[
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
+			],
+			[
+				{ type: "ス", side: "黒", prof: "ル", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ナ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ビ", never_moved: true },
+				null,
+				{ type: "ス", side: "黒", prof: "ク", never_moved: true },
+				null,
+				{ type: "ス", side: "黒", prof: "ビ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ナ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ル", never_moved: true },
+			],
+			[
+				{ type: "王", side: "黒", prof: "キ", never_moved: false, has_moved_only_once: true },
+				{ type: "しょ", side: "黒", prof: "桂", can_kumal: false },
+				{ type: "しょ", side: "黒", prof: "銀", can_kumal: false },
+				{ type: "しょ", side: "黒", prof: "金", can_kumal: false },
+				{ type: "しょ", side: "黒", prof: "香", can_kumal: false },
+				{ type: "しょ", side: "黒", prof: "金", can_kumal: false },
+				{ type: "しょ", side: "黒", prof: "銀", can_kumal: false },
+				{ type: "しょ", side: "黒", prof: "桂", can_kumal: false },
+				{ type: "しょ", side: "黒", prof: "香", can_kumal: true },
+			],
+		]
+	})
+});
+
 test('香車がなくてくまりんぐができない', () => {
 	expect(() => main([
 		{ piece_phase: { side: "黒", to: ["１", "六"], prof: "ナ" } },

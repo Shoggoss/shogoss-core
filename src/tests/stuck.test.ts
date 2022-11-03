@@ -40,3 +40,17 @@ test("桂馬を不成で行きどころのないところに行かせる", () =>
         { "piece_phase": { "side": "黒", "to": ["２", "一"], "prof": "桂", promotes: false }, },
     ])).toThrowError(`黒が２一桂不成とのことですが、桂馬を不成で行きどころのないところに行かせることはできません`);
 });
+
+test("ポ兵を不成で行きどころのないところに行かせる", () => {
+    expect(() => main([
+        { "piece_phase": { "side": "黒", "to": ["３", "五"], "prof": "ポ" }, },
+        { "piece_phase": { "side": "白", "to": ["３", "四"], "prof": "ポ" }, },
+        { "piece_phase": { "side": "黒", "to": ["３", "四"], "prof": "ポ" }, },
+        { "piece_phase": { "side": "白", "to": ["３", "三"], "prof": "桂" }, },
+        { "piece_phase": { "side": "黒", "to": ["３", "三"], "prof": "ポ" }, },
+        { "piece_phase": { "side": "白", "to": ["２", "一"], "prof": "ビ" }, },
+        { "piece_phase": { "side": "黒", "to": ["３", "二"], "prof": "ポ" }, },
+        { "piece_phase": { "side": "白", "to": ["３", "四"], "prof": "ナ" }, },
+        { "piece_phase": { "side": "黒", "to": ["３", "一"], "prof": "ポ", promotes: false }, },
+    ])).toThrowError(`黒が３一ポ不成とのことですが、ポーン兵を不成で行きどころのないところに行かせることはできません`);
+});

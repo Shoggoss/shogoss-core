@@ -92,6 +92,118 @@ test('castling', () => {
 	});
 });
 
+test('castling to the left', () => {
+	expect(main([
+		{ piece_phase: { side: "黒", to: ["６", "六"], prof: "ポ" } },
+		{ piece_phase: { side: "白", to: ["６", "四"], prof: "ポ" } },
+		{ piece_phase: { side: "黒", to: ["５", "六"], prof: "ビ" } },
+		{ piece_phase: { side: "白", to: ["５", "四"], prof: "ビ" } },
+		{ piece_phase: { side: "黒", to: ["７", "六"], prof: "ナ" } },
+		{ piece_phase: { side: "白", to: ["７", "四"], prof: "ナ" } },
+		{ piece_phase: { side: "黒", to: ["６", "七"], prof: "ク" } },
+		{ piece_phase: { side: "白", to: ["６", "二"], prof: "キ" } },
+		{ piece_phase: { side: "黒", to: ["４", "八"], prof: "キ" } },
+		{ piece_phase: { side: "白", to: ["８", "二"], prof: "キ" } }, // castle
+		{ piece_phase: { side: "黒", to: ["６", "八"], prof: "キ" } }, // castle
+	])).toEqual({
+		phase: "resolved",
+		hand_of_black: [],
+		hand_of_white: [],
+		who_goes_next: "白",
+		board: [
+			[
+				{ type: "しょ", side: "白", prof: "香", can_kumal: true },
+				{ type: "しょ", side: "白", prof: "桂", can_kumal: false },
+				{ type: "しょ", side: "白", prof: "銀", can_kumal: false },
+				{ type: "しょ", side: "白", prof: "金", can_kumal: false },
+				null,
+				{ type: "しょ", side: "白", prof: "金", can_kumal: false },
+				{ type: "しょ", side: "白", prof: "銀", can_kumal: false },
+				{ type: "しょ", side: "白", prof: "桂", can_kumal: false },
+				{ type: "しょ", side: "白", prof: "香", can_kumal: true },
+			],
+			[
+				null,
+				{ type: "王", side: "白", prof: "キ", never_moved: false, has_moved_only_once: false },
+				{ type: "ス", side: "白", prof: "ル", never_moved: false },
+				null,
+				{ type: "ス", side: "白", prof: "ク", never_moved: true },
+				null,
+				{ type: "ス", side: "白", prof: "ビ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ナ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ル", never_moved: true },
+			],
+			[
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+				null,
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "白", prof: "ポ", never_moved: true },
+			],
+			[
+				null,
+				null, 
+				{ type: "ス", side: "白", prof: "ナ", never_moved: false }, 
+				{ type: "ス", side: "白", prof: "ポ", never_moved: false }, 
+				{ type: "ス", side: "白", prof: "ビ", never_moved: false }, 
+				null,
+				null,
+				null,
+				null,
+			],
+			[null, null, null, null, null, null, null, null, null,],
+			[
+				null,
+				null, 
+				{ type: "ス", side: "黒", prof: "ナ", never_moved: false }, 
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: false }, 
+				{ type: "ス", side: "黒", prof: "ビ", never_moved: false }, 
+				null,
+				null,
+				null,
+				null, 
+			],
+			[
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ク", never_moved: false },
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ポ", never_moved: true },
+			],
+			[
+				null,
+				null,
+				null,
+				{ type: "王", side: "黒", prof: "キ", never_moved: false, has_moved_only_once: false },
+				{ type: "ス", side: "黒", prof: "ル", never_moved: false },
+				null,
+				{ type: "ス", side: "黒", prof: "ビ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ナ", never_moved: true },
+				{ type: "ス", side: "黒", prof: "ル", never_moved: true },
+			],
+			[
+				{ type: "しょ", side: "黒", prof: "香", can_kumal: true },
+				{ type: "しょ", side: "黒", prof: "桂", can_kumal: false },
+				{ type: "しょ", side: "黒", prof: "銀", can_kumal: false },
+				{ type: "しょ", side: "黒", prof: "金", can_kumal: false },
+				null,
+				{ type: "しょ", side: "黒", prof: "金", can_kumal: false },
+				{ type: "しょ", side: "黒", prof: "銀", can_kumal: false },
+				{ type: "しょ", side: "黒", prof: "桂", can_kumal: false },
+				{ type: "しょ", side: "黒", prof: "香", can_kumal: true },
+			],
+		]
+	});
+});
+
 test('castling failure by piece', () => {
 	expect(() => main([
 		{ piece_phase: { side: "黒", to: ["４", "六"], prof: "ポ" } },
