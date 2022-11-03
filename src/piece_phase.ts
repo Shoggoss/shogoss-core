@@ -71,34 +71,33 @@ export function throws_if_unkumalable(board: Readonly<Board>, o: { from: Coordin
 
 function kumaling_or_castling(old: ResolvedGameState, from: Coordinate, to: Coordinate): PiecePhasePlayed {
     const king = get_entity_from_coord(old.board, from);
-    if (king?.type === "王") {
-        const diff = coordDiff({ from, to });
-        // くまりんぐに見えるものだけをくまりんぐ判定する
-        if (king.never_moved && diff.v === 0 && (diff.h === 4 || diff.h === -4)) {
-            const { lance } = throws_if_unkumalable(old.board, { from, to });
-            put_entity_at_coord_and_also_adjust_flags(old.board, to, king);
-            put_entity_at_coord_and_also_adjust_flags(old.board, from, lance);
-            return {
-                phase: "piece_phase_played",
-                board: old.board,
-                hand_of_black: old.hand_of_black,
-                hand_of_white: old.hand_of_white,
-                by_whom: old.who_goes_next
-            }
-        } else if (king.has_moved_only_once) {
-            const diff = coordDiffSeenFrom(king.side, { to: to, from });
-            if (diff.v === 0 && (diff.h === 2 || diff.h === -2) &&
-                ((king.side === "黒" && from[1] === "八") || (king.side === "白" && from[1] === "二"))
-            ) {
-                return castling(old, { from, to: to, side: king.side });
-            } else {
-                throw new Error(`${king.side}が${displayCoord(to)}キとのことですが、そのような移動ができる${king.side}の${professionFullName("キ")}は盤上にありません`);
-            }
+    if (king?.type !== "王") {
+        throw new Error(`function \`kumaling_or_castling()\` called on a non-king piece`);
+    }
+    const diff = coordDiff({ from, to });
+    // くまりんぐに見えるものだけをくまりんぐ判定する
+    if (king.never_moved && diff.v === 0 && (diff.h === 4 || diff.h === -4)) {
+        const { lance } = throws_if_unkumalable(old.board, { from, to });
+        put_entity_at_coord_and_also_adjust_flags(old.board, to, king);
+        put_entity_at_coord_and_also_adjust_flags(old.board, from, lance);
+        return {
+            phase: "piece_phase_played",
+            board: old.board,
+            hand_of_black: old.hand_of_black,
+            hand_of_white: old.hand_of_white,
+            by_whom: old.who_goes_next
+        }
+    } else if (king.has_moved_only_once) {
+        const diff = coordDiffSeenFrom(king.side, { to: to, from });
+        if (diff.v === 0 && (diff.h === 2 || diff.h === -2) &&
+            ((king.side === "黒" && from[1] === "八") || (king.side === "白" && from[1] === "二"))
+        ) {
+            return castling(old, { from, to: to, side: king.side });
         } else {
             throw new Error(`${king.side}が${displayCoord(to)}キとのことですが、そのような移動ができる${king.side}の${professionFullName("キ")}は盤上にありません`);
         }
     } else {
-        throw new Error(`function \`kumaling_or_castling()\` called on a non-king piece`);
+        throw new Error(`${king.side}が${displayCoord(to)}キとのことですが、そのような移動ができる${king.side}の${professionFullName("キ")}は盤上にありません`);
     }
 }
 

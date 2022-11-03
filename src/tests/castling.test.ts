@@ -215,6 +215,29 @@ test('castling failure by piece', () => {
 	])).toThrowError("白が４二から２二へとキング王をキャスリングしようとしていますが、キング王とルークの間に駒があるのでキャスリングできません")
 });
 
+test('not a castling', () => {
+	expect(() => main([
+		{ piece_phase: { side: "黒", to: ["４", "六"], prof: "ポ" } },
+		{ piece_phase: { side: "白", to: ["４", "四"], prof: "ポ" } },
+		{ piece_phase: { side: "黒", to: ["３", "六"], prof: "ナ" } },
+		{ piece_phase: { side: "白", to: ["４", "二"], prof: "キ" } },
+		{ piece_phase: { side: "黒", to: ["６", "八"], prof: "キ" } },
+		{ piece_phase: { side: "白", to: ["５", "五"], prof: "キ" } }, 
+	])).toThrowError("白が５五キとのことですが、そのような移動ができる白のキング王は盤上にありません")
+});
+
+test('not a castling', () => {
+	expect(() => main([
+		{ piece_phase: { side: "黒", to: ["４", "六"], prof: "ポ" } },
+		{ piece_phase: { side: "白", to: ["４", "二"], prof: "キ" } },
+		{ piece_phase: { side: "黒", to: ["３", "六"], prof: "ナ" } },
+		{ piece_phase: { side: "白", to: ["５", "一"], prof: "キ" } },
+		{ piece_phase: { side: "黒", to: ["６", "八"], prof: "キ" } },
+		{ piece_phase: { side: "白", to: ["５", "五"], prof: "キ" } },
+	])).toThrowError("白が５五キとのことですが、そのような移動ができる白のキング王は盤上にありません")
+});
+
+
 test('castling failure by rook not being there', () => {
 	expect(() => main([
 		{ piece_phase: { side: "黒", to: ["４", "六"], prof: "ポ" } },
