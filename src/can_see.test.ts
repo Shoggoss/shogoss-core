@@ -16,3 +16,6 @@ test('what silver can see', () => {
 test('what silver cannot see', () => {
 	expect(can_see(get_initial_state("白").board, { from: ["３", "九"], to: ["４", "九"] })).toBe(false);
 });
+test('an empy square cannot see another square', () => {
+	expect(can_see(get_initial_state("白").board, { from: ["５", "五"], to: ["４", "九"] })).toBe(false);
+});

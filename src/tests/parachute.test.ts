@@ -8,6 +8,6 @@ test("既に埋まっている", () => {
     expect(() => from_custom_state([
         { "piece_phase": { "side": "黒", "to": ["３", "六"], "prof": "ポ" } },
         { "piece_phase": { "side": "白", "to": ["３", "四"], "prof": "ポ" } },
-        { "piece_phase": { "side": "黒", "to": ["１", "一"], "prof": "香" } },
-    ], state)).toThrowError(`黒が１一香打とのことですが、１一マスは既に埋まっています`);
+        { "piece_phase": { "side": "黒", "to": ["１", "三"], "prof": "香" } },
+    ], state)).toThrowError(`黒が１三香打とのことですが、１三マスは既に埋まっています`);
 });
